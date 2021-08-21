@@ -1,0 +1,27 @@
+{
+  "parent": "mcpcb:main/first_circuit",
+  "display": {
+    "icon": {
+      "item": "mcpcb:circuit",
+      "nbt": "{BlockEntityTag:{TruthTable:{Outputs:[B;0B],Mappings:[[B;1B]],Inputs:[B;2B]}}}"
+    },
+    "title": {
+      "translate": "advancements.mcpcb.not_gate.title"
+    },
+    "description": {
+      "translate": "advancements.mcpcb.not_gate.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "obtain_not": {
+      "trigger": "mcpcb:circuit_create",
+      "conditions": {
+        "ids": ["not"]
+      }
+    }
+  }
+}

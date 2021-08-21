@@ -1,0 +1,33 @@
+# The name of the mod loader type to load - for regular FML @Mod mods it should be javafml
+modLoader="javafml"
+# A version range to match for said mod loader - for regular FML @Mod it will be the forge version
+# Forge for 1.16.3 is version 34
+loaderVersion="[34,)"
+# A URL to refer people to when problems occur with this mod
+# issueTrackerURL=""
+# If the mods defined in this file should show as seperate resource packs
+showAsResourcePack=false
+
+license="MIT"
+
+[[mods]]
+modId="mcpcb"
+version="1.0.1"
+displayName="Logic Circuit Boards"
+logoFile="logo.png"
+authors="tchojnacki"
+description="Compress your redstone logic gates to a single block printed circuit boards."
+
+[[dependencies.mcpcb]]
+modId="forge"
+mandatory=true
+versionRange="[34,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.mcpcb]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.16.3,1.16.5]"
+ordering="NONE"
+side="BOTH"

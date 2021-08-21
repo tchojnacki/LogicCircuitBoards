@@ -1,0 +1,23 @@
+{
+  "parent": "mcpcb:main/use_screwdriver",
+  "display": {
+    "icon": {
+      "item": "mcpcb:multimeter"
+    },
+    "title": {
+      "translate": "advancements.mcpcb.first_circuit.title"
+    },
+    "description": {
+      "translate": "advancements.mcpcb.first_circuit.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "obtain_circuit": {
+      "trigger": "mcpcb:circuit_create"
+    }
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "parent": "mcpcb:main/first_circuit",
+  "display": {
+    "icon": {
+      "item": "mcpcb:circuit",
+      "nbt": "{BlockEntityTag:{TruthTable:{Outputs:[B;0B],Mappings:[[B;-28B]],Inputs:[B;1B,2B,3B]}}}"
+    },
+    "title": {
+      "translate": "advancements.mcpcb.all_circuits.title"
+    },
+    "description": {
+      "translate": "advancements.mcpcb.all_circuits.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "obtain_false": {
+      "trigger": "mcpcb:circuit_create",
+      "conditions": {
+        "ids": ["const_false"]
+      }
+    },
+    "obtain_true": {
+      "trigger": "mcpcb:circuit_create",
+      "conditions": {
+        "ids": ["const_true"]
+      }
+    },
+    "obtain_buffer": {
+      "trigger": "mcpcb:circuit_create",
+      "conditions": {
+        "ids": ["or_1"]
+      }
+    },
+    "obtain_or": {
+      "trigger": "mcpcb:circuit_create",
+      "conditions": {
+        "ids": ["or_2", "or_3"]
+      }
+    },
+    "obtain_not": {
+      "trigger": "mcpcb:circuit_create",
+      "conditions": {
+        "ids": ["not"]
+      }
+    },
+    "obtain_nor": {
+      "trigger": "mcpcb:circuit_create",
+      "conditions": {
+        "ids": ["nor_2", "nor_3"]
+      }
+    },
+    "obtain_and": {
+      "trigger": "mcpcb:circuit_create",
+      "conditions": {
+        "ids": ["and_2", "and_3"]
+      }
+    },
+    "obtain_nand": {
+      "trigger": "mcpcb:circuit_create",
+      "conditions": {
+        "ids": ["nand_2", "nand_3"]
+      }
+    },
+    "obtain_xor": {
+      "trigger": "mcpcb:circuit_create",
+      "conditions": {
+        "ids": ["xor"]
+      }
+    },
+    "obtain_xnor": {
+      "trigger": "mcpcb:circuit_create",
+      "conditions": {
+        "ids": ["xnor"]
+      }
+    },
+    "obtain_impl": {
+      "trigger": "mcpcb:circuit_create",
+      "conditions": {
+        "ids": ["impl"]
+      }
+    },
+    "obtain_not_impl": {
+      "trigger": "mcpcb:circuit_create",
+      "conditions": {
+        "ids": ["not_impl"]
+      }
+    },
+    "obtain_half_adder": {
+      "trigger": "mcpcb:circuit_create",
+      "conditions": {
+        "ids": ["half_adder"]
+      }
+    },
+    "obtain_mux": {
+      "trigger": "mcpcb:circuit_create",
+      "conditions": {
+        "ids": ["mux_2_to_1"]
+      }
+    },
+    "obtain_aoi": {
+      "trigger": "mcpcb:circuit_create",
+      "conditions": {
+        "ids": ["aoi_2_1"]
+      }
+    },
+    "obtain_half_subtractor": {
+      "trigger": "mcpcb:circuit_create",
+      "conditions": {
+        "ids": ["half_subtractor"]
+      }
+    }
+  }
+}

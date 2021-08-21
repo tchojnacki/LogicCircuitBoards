@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "kind=normal": { "model": "mcpcb:block/breadboard_normal" },
+    "kind=input_north": { "model": "mcpcb:block/breadboard_input" },
+    "kind=input_east": { "model": "mcpcb:block/breadboard_input", "y": 90 },
+    "kind=input_south": { "model": "mcpcb:block/breadboard_input", "y": 180 },
+    "kind=input_west": { "model": "mcpcb:block/breadboard_input", "y": 270 },
+    "kind=output_north": { "model": "mcpcb:block/breadboard_output" },
+    "kind=output_east": { "model": "mcpcb:block/breadboard_output", "y": 90 },
+    "kind=output_south": { "model": "mcpcb:block/breadboard_output", "y": 180 },
+    "kind=output_west": { "model": "mcpcb:block/breadboard_output", "y": 270 }
+  }
+}

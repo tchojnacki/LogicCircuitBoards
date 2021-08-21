@@ -1,0 +1,30 @@
+{
+  "parent": "mcpcb:main/place_breadboard",
+  "display": {
+    "icon": {
+      "item": "mcpcb:portable_breadboard"
+    },
+    "title": {
+      "translate": "advancements.mcpcb.portable_breadboard.title"
+    },
+    "description": {
+      "translate": "advancements.mcpcb.portable_breadboard.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "obtain_breadboard": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "mcpcb:portable_breadboard"
+          }
+        ]
+      }
+    }
+  }
+}

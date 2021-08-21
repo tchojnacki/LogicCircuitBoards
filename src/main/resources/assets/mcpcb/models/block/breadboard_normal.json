@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_top",
+  "textures": {
+    "side": "mcpcb:block/breadboard_normal_side",
+    "top": "mcpcb:block/breadboard_normal_top"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "display": {
+    "icon": {
+      "item": "mcpcb:circuit"
+    },
+    "title": {
+      "translate": "advancements.mcpcb.root.title"
+    },
+    "description": {
+      "translate": "advancements.mcpcb.root.description"
+    },
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false,
+    "background": "minecraft:textures/block/terracotta.png"
+  },
+  "criteria": {
+    "obtain_redstone": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "minecraft:redstone"
+          }
+        ]
+      }
+    },
+    "obtain_iron": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "minecraft:iron_ingot"
+          }
+        ]
+      }
+    },
+    "obtain_clay": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "minecraft:clay_ball"
+          }
+        ]
+      }
+    },
+    "obtain_breadboard": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "mcpcb:breadboard_block"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "obtain_redstone",
+      "obtain_iron",
+      "obtain_clay",
+      "obtain_breadboard"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "mcpcb:breadboard_block"
+    ]
+  }
+}

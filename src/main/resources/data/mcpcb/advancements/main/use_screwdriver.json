@@ -1,0 +1,38 @@
+{
+  "parent": "mcpcb:main/place_breadboard",
+  "display": {
+    "icon": {
+      "item": "mcpcb:screwdriver"
+    },
+    "title": {
+      "translate": "advancements.mcpcb.use_screwdriver.title"
+    },
+    "description": {
+      "translate": "advancements.mcpcb.use_screwdriver.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "use_on_breadboard": {
+      "trigger": "minecraft:item_used_on_block",
+      "conditions": {
+        "location": {
+          "block": {
+            "blocks": ["mcpcb:breadboard_block"]
+          }
+        },
+        "item": {
+          "item": "mcpcb:screwdriver"
+        }
+      }
+    }
+  },
+  "rewards": {
+    "recipes": [
+      "mcpcb:multimeter"
+    ]
+  }
+}

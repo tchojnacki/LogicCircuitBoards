@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "XXX",
+    "I#O",
+    "XXX"
+  ],
+  "key": {
+    "#": {
+      "item": "minecraft:clock"
+    },
+    "I": {
+      "item": "minecraft:redstone"
+    },
+    "O": {
+      "item": "minecraft:lapis_lazuli"
+    },
+    "X": {
+      "item": "minecraft:gold_ingot"
+    }
+  },
+  "result": {
+    "item": "mcpcb:multimeter",
+    "count": 1
+  }
+}

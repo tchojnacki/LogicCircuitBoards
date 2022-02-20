@@ -24,19 +24,19 @@ import java.util.Random;
 
 /**
  * Replaces the JSON circuit item model from resources such that the top face is rendered.
- * Selects an appropriate model override using {@link CircuitItemOverrideList} and then delegates
+ * Selects an appropriate model override using {@link CircuitItemOverrides} and then delegates
  * its rendering to {@link CircuitItemFinalisedModel}. All of the other faces are rendered by the
  * base model defined in {@code circuit.json} inside resources/assets/mcpcb/models/item.
  *
  * @see IBakedModelParentOverride
- * @see CircuitItemOverrideList
+ * @see CircuitItemOverrides
  * @see CircuitItemFinalisedModel
  * @see <a href="https://github.com/TheGreyGhost/MinecraftByExample/tree/master/src/main/java/minecraftbyexample/mbe15_item_dynamic_item_model">MBE15_ITEM_DYNAMIC_ITEM_MODEL</a>
  */
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 public class CircuitItemBaseModel extends IBakedModelParentOverride {
-    private final ItemOverrides circuitItemOverrideList = new CircuitItemOverrideList();
+    private final ItemOverrides circuitItemOverrides = new CircuitItemOverrides();
 
     /**
      * Constructor for the model.
@@ -52,7 +52,7 @@ public class CircuitItemBaseModel extends IBakedModelParentOverride {
 
     /**
      * Use base model (the one from {@code circuit.json}) for rendering.
-     * This is used for items not included in {@link CircuitItemOverrideList}.
+     * This is used for items not included in {@link CircuitItemOverrides}.
      * The item is normally rendered by {@link CircuitItemFinalisedModel}.
      *
      * @param blockState passed to super method
@@ -71,11 +71,11 @@ public class CircuitItemBaseModel extends IBakedModelParentOverride {
      * Returns the override list, which specifies what models to use for which item kinds (based on {@link ItemStack}).
      *
      * @return item override list
-     * @see CircuitItemOverrideList#resolve(BakedModel, ItemStack, ClientLevel, LivingEntity, int)
+     * @see CircuitItemOverrides#resolve(BakedModel, ItemStack, ClientLevel, LivingEntity, int)
      */
     @Override
     public ItemOverrides getOverrides() {
-        return circuitItemOverrideList;
+        return circuitItemOverrides;
     }
 
     /**
@@ -96,7 +96,7 @@ public class CircuitItemBaseModel extends IBakedModelParentOverride {
      */
     @NotNull
     @Override
-    public IModelData getModelData(@NotNull BlockAndTintGetter _world, @NotNull BlockPos _blockPos, @NotNull BlockState _blockState, @NotNull IModelData _data) {
+    public IModelData getModelData(@NotNull BlockAndTintGetter blockGetter, @NotNull BlockPos _blockPos, @NotNull BlockState _blockState, @NotNull IModelData _data) {
         throw new AssertionError("IForgeBakedModel::getModelData should never be called.");
     }
 }

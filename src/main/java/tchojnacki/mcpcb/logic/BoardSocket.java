@@ -28,18 +28,18 @@ public class BoardSocket {
     }
 
     /**
-     * Change socket's state as well as update the blocks placed in the world to reflect it.
+     * Change socket's state as well as update the blocks placed in the level to reflect it.
      *
      * @param state new state
-     * @param world breadboard's world
+     * @param level breadboard's level
      */
-    public void setState(State state, Level world) {
+    public void setState(State state, Level level) {
         this.state = state;
 
         BreadboardKindEnum kind = BreadboardKindEnum.getKindForSocket(this);
         for (BlockPos socketBlock : blocks) {
-            if (world.getBlockState(socketBlock).getBlock() instanceof BreadboardBlock) {
-                world.setBlockAndUpdate(socketBlock, world.getBlockState(socketBlock).setValue(BreadboardBlock.KIND, kind));
+            if (level.getBlockState(socketBlock).getBlock() instanceof BreadboardBlock) {
+                level.setBlockAndUpdate(socketBlock, level.getBlockState(socketBlock).setValue(BreadboardBlock.KIND, kind));
             }
         }
     }

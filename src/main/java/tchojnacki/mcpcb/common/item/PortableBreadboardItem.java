@@ -27,10 +27,7 @@ public class PortableBreadboardItem extends Item {
     public final static String ID = "portable_breadboard";
 
     public PortableBreadboardItem() {
-        super(
-                new Properties()
-                        .tab(MCPCB.MAIN_GROUP)
-        );
+        super(new Properties().tab(MCPCB.MAIN_GROUP));
     }
 
     /**
@@ -41,7 +38,7 @@ public class PortableBreadboardItem extends Item {
      */
     @Override
     public InteractionResult useOn(UseOnContext context) {
-        Level world = context.getLevel();
+        Level level = context.getLevel();
         Player player = context.getPlayer();
 
         if (player != null) {
@@ -58,8 +55,8 @@ public class PortableBreadboardItem extends Item {
             for (int x = 0; x != xStep * BoardManager.BOARD_SIZE; x += xStep) {
                 for (int z = 0; z != zStep * BoardManager.BOARD_SIZE; z += zStep) {
                     BlockPos currentPos = startPosition.offset(x, 0, z);
-                    if (!world.isEmptyBlock(currentPos)) {
-                        if (!world.isClientSide()) {
+                    if (!level.isEmptyBlock(currentPos)) {
+                        if (!level.isClientSide()) {
                             ((ServerPlayer) player).sendMessage(
                                     new TranslatableComponent(String.format("util.%s.%s.space_occupied", MCPCB.MOD_ID, ID)),
                                     ChatType.GAME_INFO, Util.NIL_UUID
@@ -72,12 +69,12 @@ public class PortableBreadboardItem extends Item {
             }
 
             // Place blocks on the server side
-            if (!world.isClientSide()) {
+            if (!level.isClientSide()) {
                 for (int x = 0; x != xStep * BoardManager.BOARD_SIZE; x += xStep) {
                     for (int z = 0; z != zStep * BoardManager.BOARD_SIZE; z += zStep) {
                         BlockPos currentPos = startPosition.offset(x, 0, z);
 
-                        world.setBlockAndUpdate(currentPos, Registration.BREADBOARD_BLOCK.get().defaultBlockState());
+                        level.setBlockAndUpdate(currentPos, Registration.BREADBOARD_BLOCK.get().defaultBlockState());
                     }
                 }
             }
@@ -87,7 +84,7 @@ public class PortableBreadboardItem extends Item {
                 context.getItemInHand().shrink(1);
             }
 
-            return InteractionResult.sidedSuccess(world.isClientSide());
+            return InteractionResult.sidedSuccess(level.isClientSide());
         }
 
         return InteractionResult.FAIL;

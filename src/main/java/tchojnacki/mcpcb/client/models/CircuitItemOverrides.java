@@ -22,8 +22,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
  */
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public class CircuitItemOverrideList extends ItemOverrides {
-    public CircuitItemOverrideList() {
+public class CircuitItemOverrides extends ItemOverrides {
+    public CircuitItemOverrides() {
         super();
     }
 

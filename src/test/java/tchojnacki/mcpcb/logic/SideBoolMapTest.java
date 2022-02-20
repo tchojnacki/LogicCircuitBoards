@@ -1,6 +1,8 @@
 package tchojnacki.mcpcb.logic;
 
 import org.junit.jupiter.api.Test;
+import tchojnacki.mcpcb.logic.RelDir;
+import tchojnacki.mcpcb.logic.SideBoolMap;
 
 import java.util.AbstractMap;
 import java.util.Collections;

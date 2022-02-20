@@ -149,7 +149,7 @@ public class MultimeterContainer extends AbstractContainerMenu {
         }
 
         // Add container slots
-        ImmutableList.Builder<Slot> builder = new ImmutableList.Builder<>();
+        final var builder = new ImmutableList.Builder<Slot>();
 
         // Input slots
         inputRange().forEach(i -> builder.add(
@@ -193,7 +193,7 @@ public class MultimeterContainer extends AbstractContainerMenu {
                 .add(DataSlot.standalone()) // torch
                 .build();
 
-        TruthTable.CircuitCosts circuitCosts = table.calculateCost();
+        final var circuitCosts = table.calculateCost();
 
         if (playerInv.player.getAbilities().instabuild) {
             inputRange().forEach(i -> costList.get(i).set(0));

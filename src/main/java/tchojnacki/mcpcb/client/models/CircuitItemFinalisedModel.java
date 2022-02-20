@@ -24,11 +24,11 @@ import java.util.Random;
 
 /**
  * The finalised circuit item model that renders model's top face using {@link TruthTable}
- * extracted from item stack by {@link CircuitItemOverrideList#resolve(BakedModel, ItemStack, ClientLevel, LivingEntity, int)}.
+ * extracted from item stack by {@link CircuitItemOverrides#resolve(BakedModel, ItemStack, ClientLevel, LivingEntity, int)}.
  *
  * @see IBakedModelParentOverride
  * @see CircuitItemBaseModel
- * @see CircuitItemOverrideList
+ * @see CircuitItemOverrides
  * @see <a href="https://github.com/TheGreyGhost/MinecraftByExample/tree/master/src/main/java/minecraftbyexample/mbe15_item_dynamic_item_model">MBE15_ITEM_DYNAMIC_ITEM_MODEL</a>
  */
 @MethodsReturnNonnullByDefault
@@ -38,7 +38,7 @@ public class CircuitItemFinalisedModel extends IBakedModelParentOverride {
     private final String centerTextureName;
 
     /**
-     * Constructor used in {@link CircuitItemOverrideList#resolve(BakedModel, ItemStack, ClientLevel, LivingEntity, int)}.
+     * Constructor used in {@link CircuitItemOverrides#resolve(BakedModel, ItemStack, ClientLevel, LivingEntity, int)}.
      *
      * @param baseModel base model
      * @param table     truth table contained in item's NBT tag
@@ -110,7 +110,7 @@ public class CircuitItemFinalisedModel extends IBakedModelParentOverride {
      */
     @NotNull
     @Override
-    public IModelData getModelData(@NotNull BlockAndTintGetter _world, @NotNull BlockPos _blockPos, @NotNull BlockState _blockState, @NotNull IModelData _data) {
+    public IModelData getModelData(@NotNull BlockAndTintGetter blockGetter, @NotNull BlockPos _blockPos, @NotNull BlockState _blockState, @NotNull IModelData _data) {
         throw new AssertionError("IForgeBakedModel::getModelData should never be called.");
     }
 }

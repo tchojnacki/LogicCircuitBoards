@@ -19,7 +19,7 @@ import net.minecraftforge.network.NetworkHooks;
 import tchojnacki.mcpcb.MCPCB;
 import tchojnacki.mcpcb.common.block.CircuitBlock;
 import tchojnacki.mcpcb.common.container.MultimeterContainer;
-import tchojnacki.mcpcb.common.tileentities.CircuitBlockTileEntity;
+import tchojnacki.mcpcb.common.block.entities.CircuitBlockEntity;
 import tchojnacki.mcpcb.logic.BoardManager;
 import tchojnacki.mcpcb.logic.BoardManagerException;
 import tchojnacki.mcpcb.logic.TruthTable;
@@ -51,23 +51,23 @@ public class MultimeterItem extends Item {
      */
     @Override
     public InteractionResult useOn(UseOnContext context) {
-        Level world = context.getLevel();
+        Level level = context.getLevel();
         Player player = context.getPlayer();
 
         final TruthTable truthTable;
 
         // Extract the table from the breadboard or show an error
-        if (world.getBlockState(context.getClickedPos()).getBlock() instanceof CircuitBlock) {
-            BlockEntity tileEntity = world.getBlockEntity(context.getClickedPos());
-            if (tileEntity instanceof CircuitBlockTileEntity circuitEntity) {
+        if (level.getBlockState(context.getClickedPos()).getBlock() instanceof CircuitBlock) {
+            BlockEntity blockEntity = level.getBlockEntity(context.getClickedPos());
+            if (blockEntity instanceof CircuitBlockEntity circuitEntity) {
                 truthTable = circuitEntity.getTruthTable();
             } else {
                 truthTable = null;
             }
         } else {
             try {
-                BoardManager boardManager = new BoardManager(world, context.getClickedPos());
-                TruthTable boardTable = boardManager.generateTruthTable(world);
+                BoardManager boardManager = new BoardManager(level, context.getClickedPos());
+                TruthTable boardTable = boardManager.generateTruthTable(level);
 
                 if (boardTable == null) {
                     throw new BoardManagerException("graph_is_cyclic");
@@ -82,7 +82,7 @@ public class MultimeterItem extends Item {
                         ? new TranslatableComponent("util.mcpcb.multimeter.target")
                         : error.getTranslationTextComponent();
 
-                if (player != null && !world.isClientSide()) {
+                if (player != null && !level.isClientSide()) {
                     ((ServerPlayer) player).sendMessage(
                             msg,
                             ChatType.GAME_INFO, Util.NIL_UUID
@@ -98,7 +98,7 @@ public class MultimeterItem extends Item {
         }
 
         // Create the container
-        if (player != null && !world.isClientSide()) {
+        if (player != null && !level.isClientSide()) {
             MenuConstructor provider = (int winId, Inventory playerInv, Player _playerEnt) -> MultimeterContainer.createContainerServerSide(
                     winId, playerInv, truthTable
             );

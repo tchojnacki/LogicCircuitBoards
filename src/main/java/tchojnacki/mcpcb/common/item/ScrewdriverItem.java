@@ -46,13 +46,13 @@ public class ScrewdriverItem extends Item {
      */
     @Override
     public InteractionResult useOn(UseOnContext context) {
-        Level world = context.getLevel();
+        Level level = context.getLevel();
         Player player = context.getPlayer();
 
         try {
-            BoardManager boardManager = new BoardManager(world, context.getClickedPos());
+            BoardManager boardManager = new BoardManager(level, context.getClickedPos());
 
-            if (player != null && !world.isClientSide()) {
+            if (player != null && !level.isClientSide()) {
                 MenuConstructor provider = (int winId, Inventory _playerInv, Player _playerEnt) -> ScrewdriverContainer.createContainerServerSide(winId, boardManager);
                 MenuProvider namedProvider = new SimpleMenuProvider(provider, ScrewdriverContainer.TITLE);
                 NetworkHooks.openGui((ServerPlayer) player, namedProvider);
@@ -60,7 +60,7 @@ public class ScrewdriverItem extends Item {
 
             return InteractionResult.SUCCESS;
         } catch (BoardManagerException error) {
-            if (player != null && !world.isClientSide()) {
+            if (player != null && !level.isClientSide()) {
                 ((ServerPlayer) player).sendMessage(
                         error.getTranslationTextComponent(),
                         ChatType.GAME_INFO, Util.NIL_UUID

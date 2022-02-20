@@ -56,7 +56,7 @@ public final class CircuitTopFaceBakery {
     static {
         // Static block filling the CENTER_TEXTURE_MAP with required ResourceLocations
 
-        ImmutableMap.Builder<String, ResourceLocation> builder = new ImmutableMap.Builder<>();
+        final var builder = new ImmutableMap.Builder<String, ResourceLocation>();
 
         final Consumer<String> addTexture = (String textureName) -> builder.put(textureName, new ResourceLocation("mcpcb:block/circuits/" + textureName));
 
@@ -95,12 +95,12 @@ public final class CircuitTopFaceBakery {
             states = new int[]{0, 0, 0, 0};
         }
 
-        ImmutableList.Builder<BakedQuad> builder = new ImmutableList.Builder<>();
+        final var builder = new ImmutableList.Builder<BakedQuad>();
 
         // Render corners
         for (int i = 0; i < 4; i++) {
             // List of x offsets of board corners
-            List<Integer> offsets = Arrays.asList(0, 14, 14, 0);
+            final var offsets = Arrays.asList(0, 14, 14, 0);
 
             int x = offsets.get(i); // 0 14 14 0
             int y = offsets.get((i + 3) % 4); // 0 0 14 14
@@ -117,7 +117,7 @@ public final class CircuitTopFaceBakery {
         // Render board sockets
         for (int i = 0; i < 4; i++) {
             // List of x offsets of board sockets
-            List<Integer> offsets = Arrays.asList(2, 14, 2, 0);
+            final var offsets = Arrays.asList(2, 14, 2, 0);
 
             int x = offsets.get(i);
             int y = offsets.get((i + 3) % 4);

@@ -19,7 +19,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Arrays;
 import java.util.Objects;
 
-record Vector(int x, int y) {}
+record UIPos(int x, int y) {}
 
 /**
  * Screen for breadboard configuration.
@@ -33,11 +33,11 @@ record Vector(int x, int y) {}
 public class ScrewdriverContainerScreen extends AbstractContainerScreen<ScrewdriverContainer> {
     private final static ResourceLocation TEXTURE = new ResourceLocation(MCPCB.MOD_ID, "textures/gui/container/screwdriver.png");
 
-    private final static ImmutableMap<Direction, Tuple<Vector, Vector>> BUTTON_AREAS = new ImmutableMap.Builder<Direction, Tuple<Vector, Vector>>()
-            .put(Direction.NORTH, new Tuple<>(new Vector(64, 35), new Vector(111, 50)))
-            .put(Direction.EAST, new Tuple<>(new Vector(120, 59), new Vector(135, 106)))
-            .put(Direction.SOUTH, new Tuple<>(new Vector(64, 115), new Vector(111, 130)))
-            .put(Direction.WEST, new Tuple<>(new Vector(40, 59), new Vector(55, 106)))
+    private final static ImmutableMap<Direction, Tuple<UIPos, UIPos>> BUTTON_AREAS = new ImmutableMap.Builder<Direction, Tuple<UIPos, UIPos>>()
+            .put(Direction.NORTH, new Tuple<>(new UIPos(64, 35), new UIPos(111, 50)))
+            .put(Direction.EAST, new Tuple<>(new UIPos(120, 59), new UIPos(135, 106)))
+            .put(Direction.SOUTH, new Tuple<>(new UIPos(64, 115), new UIPos(111, 130)))
+            .put(Direction.WEST, new Tuple<>(new UIPos(40, 59), new UIPos(55, 106)))
             .build();
 
     private final static int BLOCK_SIZE = 16;
@@ -82,7 +82,7 @@ public class ScrewdriverContainerScreen extends AbstractContainerScreen<Screwdri
      * @param area tuple with first element containing top-left corner and second element containing bottom-right corner
      * @return whether or not mouse is within the {@code area}
      */
-    private boolean containedInButtonArea(double x, double y, Tuple<Vector, Vector> area) {
+    private boolean containedInButtonArea(double x, double y, Tuple<UIPos, UIPos> area) {
         return leftPos + area.getA().x() - BORDER_PADDING <= x && x <= leftPos + area.getB().x() + BORDER_PADDING && topPos + area.getA().y() - BORDER_PADDING <= y && y <= topPos + area.getB().y() + BORDER_PADDING;
     }
 
@@ -94,10 +94,10 @@ public class ScrewdriverContainerScreen extends AbstractContainerScreen<Screwdri
      * @param isHovered whether player is hovering over the button
      * @return vector containing u and v of button's texture
      */
-    private Vector getButtonTexture(Direction direction, int state, boolean isHovered) {
+    private UIPos getButtonTexture(Direction direction, int state, boolean isHovered) {
         int dirIndex = Arrays.asList(new Direction[]{Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST}).indexOf(direction);
 
-        return new Vector(dirIndex * BLOCK_SIZE + (isHovered ? 4 * BLOCK_SIZE : 0), imageHeight + state * BLOCK_SIZE);
+        return new UIPos(dirIndex * BLOCK_SIZE + (isHovered ? 4 * BLOCK_SIZE : 0), imageHeight + state * BLOCK_SIZE);
     }
 
     /**
@@ -107,11 +107,11 @@ public class ScrewdriverContainerScreen extends AbstractContainerScreen<Screwdri
      * @param isHovered whether player is hovering over the button
      * @return vector containing u and v of border's texture
      */
-    private Vector getBorderTexture(Direction direction, boolean isHovered) {
+    private UIPos getBorderTexture(Direction direction, boolean isHovered) {
         if (direction.getAxis() == Direction.Axis.Z) {
-            return new Vector(imageWidth, isHovered ? (BLOCK_SIZE + 2 * BORDER_PADDING) : 0);
+            return new UIPos(imageWidth, isHovered ? (BLOCK_SIZE + 2 * BORDER_PADDING) : 0);
         } else {
-            return new Vector(imageWidth + (isHovered ? BLOCK_SIZE + 2 * BORDER_PADDING : 0), 2 * BLOCK_SIZE + 4 * BORDER_PADDING);
+            return new UIPos(imageWidth + (isHovered ? BLOCK_SIZE + 2 * BORDER_PADDING : 0), 2 * BLOCK_SIZE + 4 * BORDER_PADDING);
         }
     }
 
@@ -121,14 +121,14 @@ public class ScrewdriverContainerScreen extends AbstractContainerScreen<Screwdri
      * @param direction button's direction
      * @return vector containing width and height of button's border
      */
-    private Vector getBorderSize(Direction direction) {
+    private UIPos getBorderSize(Direction direction) {
         int longer = BORDER_PADDING + 3 * BLOCK_SIZE + BORDER_PADDING;
         int shorter = BORDER_PADDING + BLOCK_SIZE + BORDER_PADDING;
 
         if (direction.getAxis() == Direction.Axis.Z) {
-            return new Vector(longer, shorter);
+            return new UIPos(longer, shorter);
         } else {
-            return new Vector(shorter, longer);
+            return new UIPos(shorter, longer);
         }
     }
 
@@ -148,11 +148,11 @@ public class ScrewdriverContainerScreen extends AbstractContainerScreen<Screwdri
 
             for (Direction direction : Direction.Plane.HORIZONTAL) {
                 int state = menu.getSocketStateNumber(direction);
-                Tuple<Vector, Vector> btnArea = BUTTON_AREAS.get(direction);
+                Tuple<UIPos, UIPos> btnArea = BUTTON_AREAS.get(direction);
                 boolean isHovered = containedInButtonArea(mouseX, mouseY, Objects.requireNonNull(btnArea));
-                Vector buttonTextureLocation = getButtonTexture(direction, state, isHovered);
-                Vector borderTextureLocation = getBorderTexture(direction, isHovered);
-                Vector borderSize = getBorderSize(direction);
+                UIPos buttonTextureLocation = getButtonTexture(direction, state, isHovered);
+                UIPos borderTextureLocation = getBorderTexture(direction, isHovered);
+                UIPos borderSize = getBorderSize(direction);
 
                 this.blit(
                         matrixStack,

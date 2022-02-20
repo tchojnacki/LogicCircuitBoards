@@ -1,11 +1,11 @@
 package tchojnacki.mcpcb.logic;
 
+import com.google.common.collect.ImmutableList;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.TranslatableComponent;
 
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -29,8 +29,6 @@ public enum RelDir {
      * @return resulting byte array
      */
     public static byte[] dirListToBytes(List<RelDir> list) {
-        // TODO: Check for nulls within the list
-
         byte[] bytes = new byte[list.size()];
         for (int i = 0; i < list.size(); i++) {
             bytes[i] = (byte) Arrays.asList(RelDir.values()).indexOf(list.get(i));
@@ -45,17 +43,15 @@ public enum RelDir {
      * @param bytes serialized relative direction list
      * @return list of relative dirs deserialized from the byte array
      */
-    public static ArrayList<RelDir> bytesToDirList(byte[] bytes) {
-        // TODO: Possibly use an immutable list
-
-        ArrayList<RelDir> list = new ArrayList<>();
+    public static ImmutableList<RelDir> bytesToDirList(byte[] bytes) {
+        final var builder = ImmutableList.<RelDir>builder();
         for (byte b : bytes) {
             if (0 <= b && b <= 3) {
-                list.add(RelDir.values()[b]);
+                builder.add(RelDir.values()[b]);
             }
         }
 
-        return list;
+        return builder.build();
     }
 
     public TranslatableComponent translationComponent() {

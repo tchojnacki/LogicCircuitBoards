@@ -19,7 +19,7 @@ import java.util.TreeSet;
  */
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public abstract class CGNode {
+public abstract sealed class CGNode permits CGNodeCircuit, CGNodeCircuitInput, CGNodeCircuitOutput, CGNodeInput, CGNodeOutput, CGNodeTorch, CGNodeWire {
     private final TreeSet<Integer> successors = new TreeSet<>();
     private final TreeSet<Integer> predecessors = new TreeSet<>();
 

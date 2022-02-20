@@ -44,7 +44,7 @@ public class FullCircuitGraph extends CircuitGraph {
         ReducedCircuitGraph reducedGraph = new ReducedCircuitGraph();
 
         // Transfer all nodes different then wire to the new graph
-        HashMap<Integer, Integer> oldToNewVertexMap = new HashMap<>();
+        final var oldToNewVertexMap = new HashMap<Integer, Integer>();
         for (int oldIdx = 0; oldIdx < nodeCount(); oldIdx++) {
             if (!isWire(oldIdx)) {
                 int newIdx = reducedGraph.transferNodeFrom(oldIdx, this);
@@ -65,7 +65,7 @@ public class FullCircuitGraph extends CircuitGraph {
                 Calculate distances from source node to all other non-wire nodes.
                 No entry is added to the map if such connection does not exist.
                  */
-                TreeMap<Integer, Integer> distances = wireOnlyDistanceBFS(source);
+                final var distances = wireOnlyDistanceBFS(source);
 
                 for (int target : distances.keySet()) {
                     if (oldToNewVertexMap.containsKey(target)) {
@@ -92,9 +92,9 @@ public class FullCircuitGraph extends CircuitGraph {
      * @see <a href="https://en.wikipedia.org/wiki/Breadth-first_search">Wikipedia - Breadth-first search</a>
      */
     private TreeMap<Integer, Integer> wireOnlyDistanceBFS(int sourceIdx) throws IllegalArgumentException {
-        HashSet<Integer> visited = new HashSet<>();
+        final var visited = new HashSet<Integer>();
+        final var distances = new TreeMap<Integer, Integer>();
         Queue<Integer> queue = new LinkedList<>();
-        TreeMap<Integer, Integer> distances = new TreeMap<>();
 
         visited.add(sourceIdx);
         queue.add(sourceIdx);

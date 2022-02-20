@@ -42,7 +42,7 @@ public class SideBoolMap {
      * @see #getEmpty()
      */
     private static Map<RelDir, Boolean> emptyMap() {
-        HashMap<RelDir, Boolean> map = new HashMap<>();
+        final var map = new HashMap<RelDir, Boolean>();
 
         for (RelDir side : RelDir.values()) {
             map.put(side, false);
@@ -67,7 +67,7 @@ public class SideBoolMap {
      * @return side boolean map where each mapping is of the form {@code side} to {@code sidePredicate.test(side)}.
      */
     public static SideBoolMap constructWith(Predicate<RelDir> sidePredicate) {
-        Map<RelDir, Boolean> map = emptyMap();
+        final var map = emptyMap();
 
         for (RelDir side : RelDir.values()) {
             map.put(side, sidePredicate.test(side));
@@ -88,10 +88,10 @@ public class SideBoolMap {
      * @return side boolean map generated using rules above
      */
     public static <T> SideBoolMap constructFromIterable(Iterable<T> iterable, Function<T, Map.Entry<RelDir, Boolean>> function) {
-        Map<RelDir, Boolean> map = emptyMap();
+        final var map = emptyMap();
 
         for (T item : iterable) {
-            Map.Entry<RelDir, Boolean> pair = function.apply(item);
+            final var pair = function.apply(item);
             map.put(pair.getKey(), pair.getValue());
         }
 

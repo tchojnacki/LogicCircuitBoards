@@ -76,16 +76,16 @@ public abstract class IBakedModelParentOverride implements BakedModel {
      * Forge's method to pass additional data to the method rendering quads.
      * Should never get called in case of item models.
      *
-     * @param world      block's world
-     * @param blockPos   block's position
-     * @param blockState block's state
-     * @param data       additional data
+     * @param blockGetter block's blockGetter
+     * @param blockPos    block's position
+     * @param blockState  block's state
+     * @param data        additional data
      * @return additional model data for blocks used by {@link #getQuads(BlockState, Direction, Random, IModelData)}
      * @throws AssertionError for items
      */
     @NotNull
     @Override
-    public abstract IModelData getModelData(@NotNull BlockAndTintGetter world, @NotNull BlockPos blockPos, @NotNull BlockState blockState, @NotNull IModelData data);
+    public abstract IModelData getModelData(@NotNull BlockAndTintGetter blockGetter, @NotNull BlockPos blockPos, @NotNull BlockState blockState, @NotNull IModelData data);
 
     /**
      * This method is unused and replaced by Forge's alternative which supplies {@link IModelData}.

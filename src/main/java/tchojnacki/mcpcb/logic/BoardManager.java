@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class BoardManager {
     public final static int BOARD_SIZE = 8;
 
-    private final Level world;
+    private final Level level;
     private final BlockPos nwCorner;
     private final ImmutableMap<Direction, BoardSocket> sockets;
 
@@ -41,7 +41,7 @@ public class BoardManager {
             throw new IllegalArgumentException("Illegal direction.");
         }
 
-        Objects.requireNonNull(sockets.get(direction)).setState(state, world);
+        Objects.requireNonNull(sockets.get(direction)).setState(state, level);
     }
 
     public BoardSocket getSocket(Direction direction) {
@@ -73,21 +73,17 @@ public class BoardManager {
     /**
      * Create a truth table from the breadboard.
      *
-     * @param world breadboard's world
+     * @param level breadboard's level
      * @return truth table representing the circuit
      * @see CGBuilder
      */
     @Nullable
-    public TruthTable generateTruthTable(Level world) {
+    public TruthTable generateTruthTable(Level level) {
         ReducedCircuitGraph reducedGraph = CGBuilder
-                .create(world, this)
+                .create(level, this)
                 .reduce();
 
-        if (reducedGraph.isAcyclic()) {
-            return reducedGraph.getTruthTable();
-        } else {
-            return null;
-        }
+        return reducedGraph.isAcyclic() ? reducedGraph.getTruthTable() : null;
     }
 
     /**
@@ -113,25 +109,25 @@ public class BoardManager {
      * - the area has wrong dimensions
      * - block states of the breadboard blocks are in any way malformed
      *
-     * @param world breadboard's world
+     * @param level breadboard's world
      * @param blockPos any of the blocks contained in the breadboard
      * @throws BoardManagerException see method desc
      */
-    public BoardManager(Level world, BlockPos blockPos) throws BoardManagerException {
-        this.world = world;
+    public BoardManager(Level level, BlockPos blockPos) throws BoardManagerException {
+        this.level = level;
 
-        if (!(world.getBlockState(blockPos).getBlock() instanceof BreadboardBlock)) {
+        if (!(level.getBlockState(blockPos).getBlock() instanceof BreadboardBlock)) {
             throw new BoardManagerException("target_isnt_breadboard");
         }
 
         // North then west
         BlockPos curNwCorner = blockPos;
 
-        while (world.getBlockState(curNwCorner.north()).getBlock() instanceof BreadboardBlock) {
+        while (level.getBlockState(curNwCorner.north()).getBlock() instanceof BreadboardBlock) {
             curNwCorner = curNwCorner.north();
         }
 
-        while (world.getBlockState(curNwCorner.west()).getBlock() instanceof BreadboardBlock) {
+        while (level.getBlockState(curNwCorner.west()).getBlock() instanceof BreadboardBlock) {
             curNwCorner = curNwCorner.west();
         }
 
@@ -140,11 +136,11 @@ public class BoardManager {
         // West then north
         curNwCorner = blockPos;
 
-        while (world.getBlockState(curNwCorner.west()).getBlock() instanceof BreadboardBlock) {
+        while (level.getBlockState(curNwCorner.west()).getBlock() instanceof BreadboardBlock) {
             curNwCorner = curNwCorner.west();
         }
 
-        while (world.getBlockState(curNwCorner.north()).getBlock() instanceof BreadboardBlock) {
+        while (level.getBlockState(curNwCorner.north()).getBlock() instanceof BreadboardBlock) {
             curNwCorner = curNwCorner.north();
         }
 
@@ -152,16 +148,16 @@ public class BoardManager {
             throw new BoardManagerException("board_not_isolated");
         }
 
-        HashMap<Direction, ArrayList<BlockPos>> socketBlockMap = new HashMap<>();
+        final var socketBlockMap = new HashMap<Direction, ArrayList<BlockPos>>();
         Direction.Plane.HORIZONTAL.forEach(dir -> socketBlockMap.put(dir, new ArrayList<>()));
 
-        HashMap<Direction, BreadboardKindEnum> lastSocketKinds = new HashMap<>();
+        final var lastSocketKinds = new HashMap<Direction, BreadboardKindEnum>();
 
         for (int z = 0; z < BOARD_SIZE; z++) {
             for (int x = 0; x < BOARD_SIZE; x++) {
                 BlockPos currentPos = nwCorner.offset(x, 0, z);
 
-                BlockState currentBlockState = world.getBlockState(currentPos);
+                BlockState currentBlockState = level.getBlockState(currentPos);
 
                 if (!(currentBlockState.getBlock() instanceof BreadboardBlock)) {
                     throw new BoardManagerException("grid_dimensions_incorrect");
@@ -176,7 +172,7 @@ public class BoardManager {
                         socketDir = Direction.NORTH;
                     }
 
-                    if (world.getBlockState(currentPos.relative(Direction.NORTH)).getBlock() instanceof BreadboardBlock) {
+                    if (level.getBlockState(currentPos.relative(Direction.NORTH)).getBlock() instanceof BreadboardBlock) {
                         throw new BoardManagerException("board_not_isolated");
                     }
                 }
@@ -186,7 +182,7 @@ public class BoardManager {
                         socketDir = Direction.EAST;
                     }
 
-                    if (world.getBlockState(currentPos.relative(Direction.EAST)).getBlock() instanceof BreadboardBlock) {
+                    if (level.getBlockState(currentPos.relative(Direction.EAST)).getBlock() instanceof BreadboardBlock) {
                         throw new BoardManagerException("board_not_isolated");
                     }
                 }
@@ -196,7 +192,7 @@ public class BoardManager {
                         socketDir = Direction.SOUTH;
                     }
 
-                    if (world.getBlockState(currentPos.relative(Direction.SOUTH)).getBlock() instanceof BreadboardBlock) {
+                    if (level.getBlockState(currentPos.relative(Direction.SOUTH)).getBlock() instanceof BreadboardBlock) {
                         throw new BoardManagerException("board_not_isolated");
                     }
                 }
@@ -206,7 +202,7 @@ public class BoardManager {
                         socketDir = Direction.WEST;
                     }
 
-                    if (world.getBlockState(currentPos.relative(Direction.WEST)).getBlock() instanceof BreadboardBlock) {
+                    if (level.getBlockState(currentPos.relative(Direction.WEST)).getBlock() instanceof BreadboardBlock) {
                         throw new BoardManagerException("board_not_isolated");
                     }
                 }
@@ -229,7 +225,7 @@ public class BoardManager {
             }
         }
 
-        ImmutableMap.Builder<Direction, BoardSocket> builder = new ImmutableMap.Builder<>();
+        final var builder = new ImmutableMap.Builder<Direction, BoardSocket>();
         Direction.Plane.HORIZONTAL.forEach(dir ->
                 builder.put(dir, new BoardSocket(dir, socketBlockMap.get(dir), lastSocketKinds.get(dir).getState()))
         );

@@ -1,5 +1,6 @@
 package tchojnacki.mcpcb.client.models;
 
+import com.google.common.collect.ImmutableMap;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
@@ -18,7 +19,7 @@ import net.minecraftforge.client.model.data.ModelProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import tchojnacki.mcpcb.common.block.CircuitBlock;
-import tchojnacki.mcpcb.common.tileentities.CircuitBlockTileEntity;
+import tchojnacki.mcpcb.common.block.entities.CircuitBlockEntity;
 import tchojnacki.mcpcb.logic.KnownTable;
 import tchojnacki.mcpcb.logic.RelDir;
 
@@ -47,17 +48,16 @@ public class CircuitBlockModel extends IBakedModelParentOverride {
     }
 
     // Model properties
-
     private static final ModelProperty<Direction> FACING_PROP = new ModelProperty<>();
     private static final ModelProperty<String> CENTER_TEXTURE_PROP = new ModelProperty<>();
 
     // Model properties for side states (input/output/neither)
-    // TODO: Possibly hold them inside a Map<Direction, ModelProperty<Integer>>
-
-    private static final ModelProperty<Integer> NORTH_STATE = new ModelProperty<>();
-    private static final ModelProperty<Integer> EAST_STATE = new ModelProperty<>();
-    private static final ModelProperty<Integer> SOUTH_STATE = new ModelProperty<>();
-    private static final ModelProperty<Integer> WEST_STATE = new ModelProperty<>();
+    private static final ImmutableMap<Direction, ModelProperty<Integer>> STATES = ImmutableMap.<Direction, ModelProperty<Integer>>builder()
+            .put(Direction.NORTH, new ModelProperty<>())
+            .put(Direction.EAST, new ModelProperty<>())
+            .put(Direction.SOUTH, new ModelProperty<>())
+            .put(Direction.WEST, new ModelProperty<>())
+            .build();
 
     /**
      * Get initial model data.
@@ -65,48 +65,46 @@ public class CircuitBlockModel extends IBakedModelParentOverride {
      * @return base {@link IModelData} of a circuit
      */
     private static ModelDataMap emptyModelData() {
-        ModelDataMap.Builder builder = new ModelDataMap.Builder();
+        final var builder = new ModelDataMap.Builder();
 
         builder.withInitial(FACING_PROP, Direction.NORTH);
         builder.withInitial(CENTER_TEXTURE_PROP, KnownTable.DEFAULT_TEXTURE);
 
         // By default of faces are neither input nor output
-        builder.withInitial(NORTH_STATE, 0);
-        builder.withInitial(EAST_STATE, 0);
-        builder.withInitial(SOUTH_STATE, 0);
-        builder.withInitial(WEST_STATE, 0);
+        Direction.Plane.HORIZONTAL.forEach(
+                d -> builder.withInitial(STATES.get(d), 0)
+        );
 
         return builder.build();
     }
 
     /**
-     * Fill model data of the model using information from associated {@link CircuitBlockTileEntity}.
+     * Fill model data of the model using information from associated {@link CircuitBlockEntity}.
      * It seems that normally, on placement, this is called after setPlacedBy, but before tile entity
      * loads NBT from BlockEntityTag, hence all needed tile entity data is set in setPlacedBy.
      *
-     * @param world      circuit's world
-     * @param blockPos   position of the circuit
-     * @param blockState current block state at {@code blockPos}
-     * @param _data      unused
+     * @param blockGetter circuit's blockGetter
+     * @param blockPos    position of the circuit
+     * @param blockState  current block state at {@code blockPos}
+     * @param _data       unused
      * @return final {@link IModelData} for the model
      * @see CircuitBlock#setPlacedBy(Level, BlockPos, BlockState, LivingEntity, ItemStack)
      */
     @NotNull
     @Override
-    public IModelData getModelData(@NotNull BlockAndTintGetter world, @NotNull BlockPos blockPos, @NotNull BlockState blockState, @NotNull IModelData _data) {
+    public IModelData getModelData(@NotNull BlockAndTintGetter blockGetter, @NotNull BlockPos blockPos, @NotNull BlockState blockState, @NotNull IModelData _data) {
         IModelData data = emptyModelData();
 
-        BlockEntity tileEntity = world.getBlockEntity(blockPos);
-        if (tileEntity instanceof CircuitBlockTileEntity circuitEntity) {
+        BlockEntity blockEntity = blockGetter.getBlockEntity(blockPos);
+        if (blockEntity instanceof CircuitBlockEntity circuitEntity) {
             Direction facing = blockState.getValue(HorizontalDirectionalBlock.FACING);
 
             data.setData(FACING_PROP, facing);
             data.setData(CENTER_TEXTURE_PROP, circuitEntity.getTexture());
 
-            data.setData(NORTH_STATE, circuitEntity.getTruthTable().stateForSide(RelDir.getOffset(facing, Direction.NORTH)));
-            data.setData(EAST_STATE, circuitEntity.getTruthTable().stateForSide(RelDir.getOffset(facing, Direction.EAST)));
-            data.setData(SOUTH_STATE, circuitEntity.getTruthTable().stateForSide(RelDir.getOffset(facing, Direction.SOUTH)));
-            data.setData(WEST_STATE, circuitEntity.getTruthTable().stateForSide(RelDir.getOffset(facing, Direction.WEST)));
+            Direction.Plane.HORIZONTAL.forEach(
+                    d -> data.setData(STATES.get(d), circuitEntity.getTruthTable().stateForSide(RelDir.getOffset(facing, d)))
+            );
         }
 
         return data;
@@ -157,10 +155,10 @@ public class CircuitBlockModel extends IBakedModelParentOverride {
         // Return top side's quads based on model data
         return CircuitTopFaceBakery.generateQuads(
                 new int[]{
-                        getIntData(data, NORTH_STATE),
-                        getIntData(data, EAST_STATE),
-                        getIntData(data, SOUTH_STATE),
-                        getIntData(data, WEST_STATE)
+                        getIntData(data, Objects.requireNonNull(STATES.get(Direction.NORTH))),
+                        getIntData(data, Objects.requireNonNull(STATES.get(Direction.EAST))),
+                        getIntData(data, Objects.requireNonNull(STATES.get(Direction.SOUTH))),
+                        getIntData(data, Objects.requireNonNull(STATES.get(Direction.WEST)))
                 },
                 centerTextureName,
                 facing

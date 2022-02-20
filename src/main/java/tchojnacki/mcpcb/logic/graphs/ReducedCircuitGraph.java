@@ -43,10 +43,10 @@ public class ReducedCircuitGraph extends CircuitGraph {
      */
     public boolean isAcyclic() {
         for (int outputNode : circuitOutputs) {
-            HashSet<Integer> grayNodes = new HashSet<>();
-            HashSet<Integer> blackNodes = new HashSet<>();
+            final var grayNodes = new HashSet<Integer>();
+            final var blackNodes = new HashSet<Integer>();
 
-            Stack<Integer> stack = new Stack<>();
+            final var stack = new Stack<Integer>();
             stack.push(outputNode);
 
             while (!stack.isEmpty()) {
@@ -86,40 +86,44 @@ public class ReducedCircuitGraph extends CircuitGraph {
      */
     private boolean evaluateNode(int nodeId, int inputSet) throws IllegalArgumentException {
         CGNode node = getNode(nodeId);
-        if (node instanceof CGNodeCircuit) {
-            throw new IllegalArgumentException("Can't evaluate circuit node directly.");
-        } else if (node instanceof CGNodeInput) {
-            // Check whether the input is enabled currently
-            int inputSetMask = 1 << Arrays.asList(circuitInputs.toArray()).indexOf(nodeId);
 
-            return (inputSetMask & inputSet) != 0;
-        } else if (node instanceof CGNodeCircuitOutput outputNode) {
-            CGNodeCircuit circuitNode = (CGNodeCircuit) getNode(outputNode.getCircuit());
+        return switch (node) {
+            case CGNodeCircuit ignored -> throw new IllegalArgumentException("Can't evaluate circuit node directly.");
+            case CGNodeInput ignored -> {
+                // Check whether the input is enabled currently
+                int inputSetMask = 1 << Arrays.asList(circuitInputs.toArray()).indexOf(nodeId);
 
-            SideBoolMap circuitInputs = SideBoolMap.constructFromIterable(
-                    circuitNode.getPredecessors(),
-                    inNode -> new AbstractMap.SimpleEntry<>(
-                            ((CGNodeCircuitInput) getNode(inNode)).getDir(),
-                            evaluateNode(inNode, inputSet)
-                    )
-            );
-
-            return circuitNode.getTruthTable().getOutputsForInputs(circuitInputs).get(outputNode.getDir());
-        } else {
-            Set<Integer> nodePredecessors = getNode(nodeId).getPredecessors();
-
-            boolean orResult = !nodePredecessors.isEmpty() && nodePredecessors
-                    .stream()
-                    .anyMatch(p -> evaluateNode(p, inputSet)); // Any true
-
-            if (node instanceof CGNodeOutput || node instanceof CGNodeCircuitInput) {
-                return orResult;
-            } else if (node instanceof CGNodeTorch) {
-                return !orResult;
-            } else {
-                throw new IllegalStateException("Illegal node type.");
+                yield (inputSetMask & inputSet) != 0;
             }
-        }
+            case CGNodeCircuitOutput circuitOutput -> {
+                CGNodeCircuit circuitNode = (CGNodeCircuit) getNode(circuitOutput.getCircuit());
+
+                SideBoolMap circuitInputs = SideBoolMap.constructFromIterable(
+                        circuitNode.getPredecessors(),
+                        inNode -> new AbstractMap.SimpleEntry<>(
+                                ((CGNodeCircuitInput) getNode(inNode)).getDir(),
+                                evaluateNode(inNode, inputSet)
+                        )
+                );
+
+                yield circuitNode.getTruthTable().getOutputsForInputs(circuitInputs).get(circuitOutput.getDir());
+            }
+            default -> {
+                final var nodePredecessors = getNode(nodeId).getPredecessors();
+
+                boolean orResult = !nodePredecessors.isEmpty() && nodePredecessors
+                        .stream()
+                        .anyMatch(p -> evaluateNode(p, inputSet)); // Any true
+
+                if (node instanceof CGNodeOutput || node instanceof CGNodeCircuitInput) {
+                    yield orResult;
+                } else if (node instanceof CGNodeTorch) {
+                    yield !orResult;
+                } else {
+                    throw new IllegalStateException("Illegal node type.");
+                }
+            }
+        };
     }
 
     /**
@@ -143,9 +147,9 @@ public class ReducedCircuitGraph extends CircuitGraph {
         int inputSetCount = 1 << inputCount;
         int outputCount = circuitOutputs.size();
 
-        ArrayList<RelDir> inputs = new ArrayList<>();
-        ArrayList<RelDir> outputs = new ArrayList<>();
-        ArrayList<BitSet> mappings = new ArrayList<>();
+        final var inputs = new ArrayList<RelDir>();
+        final var outputs = new ArrayList<RelDir>();
+        final var mappings = new ArrayList<BitSet>();
 
         for (int idx : circuitInputs) {
             inputs.add(RelDir.getOffset(Direction.NORTH, getIODirection(idx)));

@@ -210,13 +210,11 @@ public abstract class CircuitGraph {
     public Direction getIODirection(int index) throws IllegalArgumentException {
         CGNode node = getNode(index);
 
-        if (node instanceof CGNodeInput) {
-            return ((CGNodeInput) node).getInputSocket().getDirection();
-        } else if (node instanceof CGNodeOutput) {
-            return ((CGNodeOutput) node).getOutputSocket().getDirection();
-        } else {
-            throw new IllegalArgumentException("Illegal node type.");
-        }
+        return switch (node) {
+            case CGNodeInput nodeInput -> nodeInput.getInputSocket().getDirection();
+            case CGNodeOutput nodeOutput -> nodeOutput.getOutputSocket().getDirection();
+            default -> throw new IllegalArgumentException("Illegal node type.");
+        };
     }
 
     /**

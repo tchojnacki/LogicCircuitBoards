@@ -24,7 +24,7 @@ import tchojnacki.mcpcb.common.container.ScrewdriverContainer;
 import tchojnacki.mcpcb.common.item.MultimeterItem;
 import tchojnacki.mcpcb.common.item.PortableBreadboardItem;
 import tchojnacki.mcpcb.common.item.ScrewdriverItem;
-import tchojnacki.mcpcb.common.tileentities.CircuitBlockTileEntity;
+import tchojnacki.mcpcb.common.block.entities.CircuitBlockEntity;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -36,9 +36,7 @@ import java.util.function.BiConsumer;
 @SuppressWarnings("unused")
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public class Registration {
-    // TODO: All methods are static, make it impossible to instance this class
-
+public final class Registration {
     // Deferred registers
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MCPCB.MOD_ID);
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MCPCB.MOD_ID);
@@ -64,7 +62,7 @@ public class Registration {
 
     // Tile entities
     @SuppressWarnings("ConstantConditions")
-    public static final RegistryObject<BlockEntityType<CircuitBlockTileEntity>> CIRCUIT_BLOCK_TILE_ENTITY = Registration.TILE_ENTITIES.register(CircuitBlockTileEntity.ID, () -> BlockEntityType.Builder.of(CircuitBlockTileEntity::new, CIRCUIT_BLOCK.get()).build(null));
+    public static final RegistryObject<BlockEntityType<CircuitBlockEntity>> CIRCUIT_BLOCK_TILE_ENTITY = Registration.TILE_ENTITIES.register(CircuitBlockEntity.ID, () -> BlockEntityType.Builder.of(CircuitBlockEntity::new, CIRCUIT_BLOCK.get()).build(null));
 
     public static void register() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -89,9 +87,9 @@ public class Registration {
     /**
      * Helper method for block item registration.
      *
-     * @param block block for which we register the block item
+     * @param block      block for which we register the block item
      * @param putInGroup whether to put the item in the creative tab
-     * @param onCrafted optional handler for "onCraftedBy" event, pass null if unused
+     * @param onCrafted  optional handler for "onCraftedBy" event, pass null if unused
      * @return registry object containing the block item
      */
     private static RegistryObject<Item> registerBlockItem(RegistryObject<Block> block, boolean putInGroup, @Nullable BiConsumer<ItemStack, Player> onCrafted) {
@@ -102,8 +100,8 @@ public class Registration {
                         putInGroup ? new Item.Properties().tab(MCPCB.MAIN_GROUP) : new Item.Properties()
                 ) {
                     @Override
-                    public void onCraftedBy(ItemStack itemStack, Level world, Player playerEntity) {
-                        super.onCraftedBy(itemStack, world, playerEntity);
+                    public void onCraftedBy(ItemStack itemStack, Level level, Player playerEntity) {
+                        super.onCraftedBy(itemStack, level, playerEntity);
 
                         if (onCrafted != null) {
                             onCrafted.accept(itemStack, playerEntity);
@@ -111,5 +109,8 @@ public class Registration {
                     }
                 }
         );
+    }
+
+    private Registration() {
     }
 }

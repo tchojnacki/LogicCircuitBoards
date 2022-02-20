@@ -120,12 +120,10 @@ public class TruthTable {
      * @param inputSet integer representing the set of inputs, where i-th bit corresponds to i-th input's state
      * @return list of values of outputs for given inputs
      */
-    private ArrayList<Boolean> outputsForInputSet(int inputSet) {
-        // TODO: Possibly return an immutable list
-        return mappings
-                .stream()
-                .map(b -> b.get(inputSet))
-                .collect(Collectors.toCollection(ArrayList::new));
+    private ImmutableList<Boolean> outputsForInputSet(int inputSet) {
+        final var builder = ImmutableList.<Boolean>builder();
+        mappings.forEach(b -> builder.add(b.get(inputSet)));
+        return builder.build();
     }
 
     /**
@@ -140,9 +138,7 @@ public class TruthTable {
             inputSet += (1 << i) * (inputMap.get(inputs.get(i)) ? 1 : 0);
         }
 
-        final int finalInputSet = inputSet;
-
-        ArrayList<Boolean> outputsForSet = outputsForInputSet(finalInputSet);
+        final var outputsForSet = outputsForInputSet(inputSet);
 
         return SideBoolMap.constructWith(
                 side -> outputs.contains(side)
@@ -262,7 +258,7 @@ public class TruthTable {
 
     /**
      * Class representing the cost of creating a circuit block represented by this table.
-     *
+     * <p>
      * Each circuit block costs exactly 1 terracotta.
      * The number of dust and torches corresponds to zeros and ones found inside mappings.
      */
@@ -311,8 +307,8 @@ public class TruthTable {
             return TruthTable.empty();
         }
 
-        ArrayList<RelDir> inputs = RelDir.bytesToDirList(tag.getByteArray("Inputs"));
-        ArrayList<RelDir> outputs = RelDir.bytesToDirList(tag.getByteArray("Outputs"));
+        final var inputs = RelDir.bytesToDirList(tag.getByteArray("Inputs"));
+        final var outputs = RelDir.bytesToDirList(tag.getByteArray("Outputs"));
 
         ArrayList<BitSet> mappings = new ArrayList<>();
         ListTag list = tag.getList("Mappings", CompoundTag.TAG_BYTE_ARRAY);

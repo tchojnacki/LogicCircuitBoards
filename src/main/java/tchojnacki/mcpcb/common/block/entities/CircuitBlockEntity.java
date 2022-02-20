@@ -1,4 +1,4 @@
-package tchojnacki.mcpcb.common.tileentities;
+package tchojnacki.mcpcb.common.block.entities;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
@@ -27,7 +27,7 @@ import java.util.Objects;
  */
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public class CircuitBlockTileEntity extends BlockEntity {
+public class CircuitBlockEntity extends BlockEntity {
     public final static String ID = "circuit_tile_entity";
 
     private TextComponent customName;
@@ -44,7 +44,7 @@ public class CircuitBlockTileEntity extends BlockEntity {
      */
     private SideBoolMap queuedOutput = SideBoolMap.getEmpty();
 
-    public CircuitBlockTileEntity(BlockPos blockPos, BlockState blockState) {
+    public CircuitBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(Registration.CIRCUIT_BLOCK_TILE_ENTITY.get(), blockPos, blockState);
     }
 

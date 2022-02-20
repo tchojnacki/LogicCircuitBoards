@@ -11,7 +11,7 @@ import tchojnacki.mcpcb.MCPCB;
  *
  * @see <a href="https://mcforge.readthedocs.io/en/1.16.x/networking/simpleimpl/#simpleimpl">SimpleImpl - Forge Documentation</a>
  */
-public class PacketHandler {
+public final class PacketHandler {
     private static final String PROTOCOL_VERSION = "1";
     public static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(MCPCB.MOD_ID, "multimeter_screen_rename"), // channel used only for multimeter screen circuit rename

@@ -22,7 +22,6 @@ import tchojnacki.mcpcb.util.PacketHandler;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Screen for circuit creation and crafting.
@@ -109,15 +108,15 @@ public class MultimeterContainerScreen extends AbstractContainerScreen<Multimete
     }
 
     @Override
-    public boolean keyPressed(int key, int p_231046_2_, int p_231046_3_) {
+    public boolean keyPressed(int key, int flag1, int flag2) {
         // Close container on ESC press
         if (key == 256 && this.minecraft != null && this.minecraft.player != null) {
             this.minecraft.player.closeContainer();
         }
 
-        boolean keyPressResult = this.name.keyPressed(key, p_231046_2_, p_231046_3_);
+        boolean keyPressResult = this.name.keyPressed(key, flag1, flag2);
 
-        return keyPressResult || this.name.canConsumeInput() || super.keyPressed(key, p_231046_2_, p_231046_3_);
+        return keyPressResult || this.name.canConsumeInput() || super.keyPressed(key, flag1, flag2);
     }
 
     @Override
@@ -137,7 +136,7 @@ public class MultimeterContainerScreen extends AbstractContainerScreen<Multimete
             // Base background texture
             this.blit(matrixStack, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
 
-            ImmutableList<Slot> slotList = this.menu.getInputSlotList();
+            final var slotList = this.menu.getInputSlotList();
 
             // Render input slots backgrounds
             for (int i = 0; i < slotList.size(); i++) {
@@ -171,7 +170,7 @@ public class MultimeterContainerScreen extends AbstractContainerScreen<Multimete
         super.renderLabels(matrixStack, mouseX, mouseY);
 
         // Render cost labels
-        ImmutableList<Integer> costs = this.menu.getCostArray();
+        final var costs = this.menu.getCostArray();
         for (int i = 0; i < costs.size(); i++) {
             String numberString = String.format("x%d", costs.get(i));
             int padding = (int) Math.ceil((18 - this.font.width(numberString)) / 2f); // Text centering
@@ -188,9 +187,9 @@ public class MultimeterContainerScreen extends AbstractContainerScreen<Multimete
         super.renderTooltip(matrixStack, mouseX, mouseY);
 
         // Tooltips for the areas
-        ImmutableList<String> itemKeys = ImmutableList.of("block.minecraft.terracotta", "item.minecraft.redstone", "block.minecraft.redstone_torch");
+        final var itemKeys = ImmutableList.of("block.minecraft.terracotta", "item.minecraft.redstone", "block.minecraft.redstone_torch");
 
-        List<Component> list = new ArrayList<>();
+        final var list = new ArrayList<Component>();
 
         // If mouse is vertically within tooltip areas
         if (mouseY >= this.topPos + 43 && mouseY < this.topPos + 57) {

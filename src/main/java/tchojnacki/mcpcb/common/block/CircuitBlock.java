@@ -1,30 +1,34 @@
 package tchojnacki.mcpcb.common.block;
 
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.block.*;
-import net.minecraft.block.material.Material;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.state.StateContainer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.text.*;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorldReader;
-import net.minecraft.world.TickPriority;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.ChatFormatting;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.ticks.ScheduledTick;
+import net.minecraft.world.ticks.TickPriority;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.Constants;
 import org.jetbrains.annotations.Nullable;
 import tchojnacki.mcpcb.common.tileentities.CircuitBlockTileEntity;
 import tchojnacki.mcpcb.logic.KnownTable;
@@ -46,7 +50,7 @@ import java.util.stream.Collectors;
  */
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock for facing direction
+public class CircuitBlock extends HorizontalDirectionalBlock implements EntityBlock { // extend HorizontalBlock for facing direction
     public final static String ID = "circuit";
 
     private final static int DELAY = 2;
@@ -59,10 +63,10 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
      * @param playerEntity player which crafted the circuit
      * @see CircuitCreateTrigger
      */
-    public static void onCrafted(ItemStack itemStack, PlayerEntity playerEntity) {
-        if (playerEntity instanceof ServerPlayerEntity) {
+    public static void onCrafted(ItemStack itemStack, Player playerEntity) {
+        if (playerEntity instanceof ServerPlayer) {
             // Trigger the criteria
-            CircuitCreateTrigger.TRIGGER.trigger((ServerPlayerEntity) playerEntity, itemStack);
+            CircuitCreateTrigger.TRIGGER.trigger((ServerPlayer) playerEntity, itemStack);
         }
     }
 
@@ -88,7 +92,7 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
      * @param relDir   the side
      * @return whether the circuit has power from the side
      */
-    private boolean hasSignalFrom(World world, BlockPos blockPos, RelDir relDir) {
+    private boolean hasSignalFrom(Level world, BlockPos blockPos, RelDir relDir) {
         BlockState blockState = world.getBlockState(blockPos);
         Direction direction = relDir.offsetFrom(blockState.getValue(FACING));
 
@@ -101,7 +105,7 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
      * @param builder state container builder
      */
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING);
     }
 
@@ -112,7 +116,7 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
      * @return block state with correct facing value
      */
     @Override
-    public BlockState getStateForPlacement(BlockItemUseContext context) {
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
         return this.defaultBlockState()
                 .setValue(FACING, context.getHorizontalDirection());
     }
@@ -125,11 +129,9 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
      * @param blockPos block's pos
      * @see CircuitBlockTileEntity
      */
-    private void calculatePowerAndUpdateNeighbours(World world, BlockPos blockPos) {
-        TileEntity tileEntity = world.getBlockEntity(blockPos);
-        if (tileEntity instanceof CircuitBlockTileEntity) {
-            CircuitBlockTileEntity circuitEntity = (CircuitBlockTileEntity) tileEntity;
-
+    private void calculatePowerAndUpdateNeighbours(Level world, BlockPos blockPos) {
+        BlockEntity tileEntity = world.getBlockEntity(blockPos);
+        if (tileEntity instanceof CircuitBlockTileEntity circuitEntity) {
             // Get power before and after update
             SideBoolMap currentPower = circuitEntity.getActualOutput();
             SideBoolMap newPower = circuitEntity.setQueuedOutput(
@@ -138,13 +140,13 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
 
             // Schedule tick if new power is different
             if (!currentPower.equals(newPower)) {
-                world.getBlockTicks().scheduleTick(blockPos, this, DELAY, TickPriority.VERY_HIGH);
+                world.getBlockTicks().schedule(new ScheduledTick<>(this, blockPos, DELAY, TickPriority.VERY_HIGH, 0));
             }
         }
     }
 
     /**
-     * Called on tick scheduled in {@link #calculatePowerAndUpdateNeighbours(World, BlockPos)}.
+     * Called on tick scheduled in {@link #calculatePowerAndUpdateNeighbours(Level, BlockPos)}.
      *
      * @param blockState  block's state
      * @param serverWorld block's world (server side)
@@ -153,10 +155,9 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
      */
     @SuppressWarnings("deprecation")
     @Override
-    public void tick(BlockState blockState, ServerWorld serverWorld, BlockPos blockPos, Random _random) {
-        TileEntity tileEntity = serverWorld.getBlockEntity(blockPos);
-        if (tileEntity instanceof CircuitBlockTileEntity) {
-            CircuitBlockTileEntity circuitEntity = (CircuitBlockTileEntity) tileEntity;
+    public void tick(BlockState blockState, ServerLevel serverWorld, BlockPos blockPos, Random _random) {
+        BlockEntity tileEntity = serverWorld.getBlockEntity(blockPos);
+        if (tileEntity instanceof CircuitBlockTileEntity circuitEntity) {
             // Update only if the output will change
             if (circuitEntity.isOutputOutdated()) {
                 circuitEntity.updateOutput();
@@ -191,30 +192,10 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
         }
     }
 
-    /**
-     * Returns if the block has a tile entity, always true.
-     *
-     * @param _state unused
-     * @return always true
-     * @see CircuitBlockTileEntity
-     */
-    @Override
-    public boolean hasTileEntity(BlockState _state) {
-        return true;
-    }
-
-    /**
-     * Creates and returns an appropriate tile enity.
-     *
-     * @param _state unused
-     * @param _world unused
-     * @return this block's {@link CircuitBlockTileEntity}
-     * @see CircuitBlockTileEntity
-     */
     @Nullable
     @Override
-    public TileEntity createTileEntity(BlockState _state, IBlockReader _world) {
-        return new CircuitBlockTileEntity();
+    public BlockEntity newBlockEntity(BlockPos blockPos, BlockState blockState) {
+        return new CircuitBlockTileEntity(blockPos, blockState);
     }
 
     /**
@@ -241,11 +222,9 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
      */
     @SuppressWarnings("deprecation")
     @Override
-    public int getSignal(BlockState blockState, IBlockReader blockReader, BlockPos blockPos, Direction direction) {
-        TileEntity tileEntity = blockReader.getBlockEntity(blockPos);
-        if (tileEntity instanceof CircuitBlockTileEntity) {
-            CircuitBlockTileEntity circuitEntity = (CircuitBlockTileEntity) tileEntity;
-
+    public int getSignal(BlockState blockState, BlockGetter blockReader, BlockPos blockPos, Direction direction) {
+        BlockEntity tileEntity = blockReader.getBlockEntity(blockPos);
+        if (tileEntity instanceof CircuitBlockTileEntity circuitEntity) {
             return circuitEntity
                     .getActualOutput()
                     .get(
@@ -270,7 +249,7 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
      */
     @SuppressWarnings("deprecation")
     @Override
-    public int getDirectSignal(BlockState blockState, IBlockReader blockReader, BlockPos blockPos, Direction direction) {
+    public int getDirectSignal(BlockState blockState, BlockGetter blockReader, BlockPos blockPos, Direction direction) {
         return blockState.getSignal(blockReader, blockPos, direction);
     }
 
@@ -284,10 +263,9 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
      * @return if the block connects redstone at in direction given by {@code side}
      */
     @Override
-    public boolean canConnectRedstone(BlockState state, IBlockReader blockReader, BlockPos blockPos, @Nullable Direction side) {
-        TileEntity tileEntity = blockReader.getBlockEntity(blockPos);
-        if (tileEntity instanceof CircuitBlockTileEntity && Direction.Plane.HORIZONTAL.test(side)) {
-            CircuitBlockTileEntity circuitEntity = (CircuitBlockTileEntity) tileEntity;
+    public boolean canConnectRedstone(BlockState state, BlockGetter blockReader, BlockPos blockPos, @Nullable Direction side) {
+        BlockEntity tileEntity = blockReader.getBlockEntity(blockPos);
+        if (tileEntity instanceof CircuitBlockTileEntity circuitEntity && Direction.Plane.HORIZONTAL.test(side)) {
             BlockState blockState = blockReader.getBlockState(blockPos);
             RelDir relDir = RelDir.getOffset(blockState.getValue(FACING), side.getOpposite());
 
@@ -306,7 +284,7 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
      */
     @SuppressWarnings("deprecation")
     @Override
-    public VoxelShape getShape(BlockState _blockState, IBlockReader _blockReader, BlockPos _blockPos, ISelectionContext _context) {
+    public VoxelShape getShape(BlockState _blockState, BlockGetter _blockReader, BlockPos _blockPos, CollisionContext _context) {
         return SHAPE;
     }
 
@@ -317,11 +295,11 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
      * @param worldReader world reader
      * @param blockPos    block's position
      * @return if the block can survive at {@code blockPos}
-     * @see #canSupportRigidBlock(IBlockReader, BlockPos)
+     * @see #canSupportRigidBlock(BlockGetter, BlockPos)
      */
     @SuppressWarnings("deprecation")
     @Override
-    public boolean canSurvive(BlockState _blockState, IWorldReader worldReader, BlockPos blockPos) {
+    public boolean canSurvive(BlockState _blockState, LevelReader worldReader, BlockPos blockPos) {
         return canSupportRigidBlock(worldReader, blockPos.below());
     }
 
@@ -334,11 +312,11 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
      * @param blockPos           block's position
      * @param _blockStateUpdated unused
      * @param _flag              unused
-     * @see #calculatePowerAndUpdateNeighbours(World, BlockPos)
+     * @see #calculatePowerAndUpdateNeighbours(Level, BlockPos)
      */
     @SuppressWarnings("deprecation")
     @Override
-    public void onPlace(BlockState _blockState, World world, BlockPos blockPos, BlockState _blockStateUpdated, boolean _flag) {
+    public void onPlace(BlockState _blockState, Level world, BlockPos blockPos, BlockState _blockStateUpdated, boolean _flag) {
         calculatePowerAndUpdateNeighbours(world, blockPos);
     }
 
@@ -351,11 +329,11 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
      * @param blockPos          block's pos
      * @param updatedBlockState block state after removal, passed to super method
      * @param flag              passed to super method
-     * @see #calculatePowerAndUpdateNeighbours(World, BlockPos)
+     * @see #calculatePowerAndUpdateNeighbours(Level, BlockPos)
      */
     @SuppressWarnings("deprecation")
     @Override
-    public void onRemove(BlockState blockState, World world, BlockPos blockPos, BlockState updatedBlockState, boolean flag) {
+    public void onRemove(BlockState blockState, Level world, BlockPos blockPos, BlockState updatedBlockState, boolean flag) {
         if (!flag && !blockState.is(updatedBlockState.getBlock())) {
             super.onRemove(blockState, world, blockPos, updatedBlockState, false);
 
@@ -376,12 +354,12 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
      * @param _block     unused
      * @param _updatePos unused
      * @param _flag      unused
-     * @see #canSurvive(BlockState, IWorldReader, BlockPos)
-     * @see #calculatePowerAndUpdateNeighbours(World, BlockPos)
+     * @see #canSurvive(BlockState, LevelReader, BlockPos)
+     * @see #calculatePowerAndUpdateNeighbours(Level, BlockPos)
      */
     @SuppressWarnings("deprecation")
     @Override
-    public void neighborChanged(BlockState blockState, World world, BlockPos blockPos, Block _block, BlockPos _updatePos, boolean _flag) {
+    public void neighborChanged(BlockState blockState, Level world, BlockPos blockPos, Block _block, BlockPos _updatePos, boolean _flag) {
         if (!blockState.canSurvive(world, blockPos)) {
             world.removeBlock(blockPos, false);
             return;
@@ -400,13 +378,11 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
      */
     @SuppressWarnings("deprecation")
     @Override
-    public ItemStack getCloneItemStack(IBlockReader blockReader, BlockPos blockPos, BlockState blockState) {
+    public ItemStack getCloneItemStack(BlockGetter blockReader, BlockPos blockPos, BlockState blockState) {
         ItemStack itemStack = new ItemStack(this);
 
-        TileEntity tileEntity = blockReader.getBlockEntity(blockPos);
-        if (tileEntity instanceof CircuitBlockTileEntity) {
-            CircuitBlockTileEntity circuitEntity = (CircuitBlockTileEntity) tileEntity;
-
+        BlockEntity tileEntity = blockReader.getBlockEntity(blockPos);
+        if (tileEntity instanceof CircuitBlockTileEntity circuitEntity) {
             // Copy NBT
             itemStack.getOrCreateTagElement("BlockEntityTag").put("TruthTable", circuitEntity.getTruthTable().toNBT());
 
@@ -447,20 +423,18 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
      * @param itemStack  circuit's item stack before placement
      */
     @Override
-    public void setPlacedBy(World world, BlockPos blockPos, BlockState blockState, @Nullable LivingEntity entity, ItemStack itemStack) {
+    public void setPlacedBy(Level world, BlockPos blockPos, BlockState blockState, @Nullable LivingEntity entity, ItemStack itemStack) {
         super.setPlacedBy(world, blockPos, blockState, entity, itemStack);
 
-        TileEntity tileEntity = world.getBlockEntity(blockPos);
-        if (tileEntity instanceof CircuitBlockTileEntity) {
-            CircuitBlockTileEntity circuitEntity = (CircuitBlockTileEntity) tileEntity;
-
+        BlockEntity tileEntity = world.getBlockEntity(blockPos);
+        if (tileEntity instanceof CircuitBlockTileEntity circuitEntity) {
             // Copy item name - the normal use for overriding this method
             if (itemStack.hasCustomHoverName()) {
-                circuitEntity.setCustomName(itemStack.getHoverName());
+                circuitEntity.setCustomName(new TextComponent(itemStack.getHoverName().getString()));
             }
 
             // Fix for incorrect IBakedModel render on placement
-            CompoundNBT tag = itemStack.getTagElement("BlockEntityTag");
+            CompoundTag tag = itemStack.getTagElement("BlockEntityTag");
             if (tag != null) {
                 circuitEntity.setFromParentTag(tag);
             }
@@ -468,22 +442,22 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
     }
 
     /**
-     * Helper method that returns a direction list in form of a {@link IFormattableTextComponent}.
+     * Helper method that returns a direction list in form of a {@link Component}.
      *
      * @param type "inputs" or "outputs"
      * @param directions list of directions to include in a list
      * @return formatted text with a header based on {@code type} and a list of comma separated directions
      */
-    private IFormattableTextComponent dirListTextComponent(String type, List<RelDir> directions) {
-        return new TranslationTextComponent("util.mcpcb.circuit_desc." + type) // list header
-                .withStyle(TextFormatting.GRAY)
-                .append(new StringTextComponent(
+    private Component dirListTextComponent(String type, List<RelDir> directions) {
+        return new TranslatableComponent("util.mcpcb.circuit_desc." + type) // list header
+                .withStyle(ChatFormatting.GRAY)
+                .append(new TextComponent(
                         directions
                                 .stream()
                                 .map(RelDir::translationComponent) // return translation of each direction
-                                .map(TranslationTextComponent::getString)
+                                .map(TranslatableComponent::getString)
                                 .collect(Collectors.joining(", "))
-                ).withStyle(TextFormatting.GRAY));
+                ).withStyle(ChatFormatting.GRAY));
     }
 
     /**
@@ -498,19 +472,19 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
      */
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void appendHoverText(ItemStack itemStack, @Nullable IBlockReader _blockReader, List<ITextComponent> rows, ITooltipFlag _flag) {
-        CompoundNBT tag = itemStack.getTagElement("BlockEntityTag");
+    public void appendHoverText(ItemStack itemStack, @Nullable BlockGetter _blockReader, List<Component> rows, TooltipFlag _flag) {
+        CompoundTag tag = itemStack.getTagElement("BlockEntityTag");
         if (tag != null) {
-            if (tag.contains("TruthTable", Constants.NBT.TAG_COMPOUND)) {
+            if (tag.contains("TruthTable", CompoundTag.TAG_COMPOUND)) {
                 TruthTable table = TruthTable.fromNBT(tag.getCompound("TruthTable"));
 
                 // Add a blue circuit name if it isn't mentioned in its custom name
                 KnownTable knownTable = table.recognize();
                 if (knownTable != null) {
-                    TranslationTextComponent circuitName = knownTable.getTranslationKey();
+                    TranslatableComponent circuitName = knownTable.getTranslationKey();
 
                     if (!itemStack.hasCustomHoverName() || !itemStack.getHoverName().getString().equals(circuitName.getString())) {
-                        rows.add(circuitName.plainCopy().withStyle(TextFormatting.BLUE));
+                        rows.add(circuitName.plainCopy().withStyle(ChatFormatting.BLUE));
                     }
                 }
 
@@ -535,7 +509,7 @@ public class CircuitBlock extends HorizontalBlock { // extend HorizontalBlock fo
      */
     @SuppressWarnings("deprecation")
     @Override
-    public BlockRenderType getRenderShape(BlockState _blockState) {
-        return BlockRenderType.MODEL;
+    public RenderShape getRenderShape(BlockState _blockState) {
+        return RenderShape.MODEL;
     }
 }

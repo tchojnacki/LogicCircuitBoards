@@ -1,18 +1,18 @@
 package tchojnacki.mcpcb.client.screen;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
-import mcp.MethodsReturnNonnullByDefault;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.inventory.ContainerScreen;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import tchojnacki.mcpcb.MCPCB;
@@ -33,12 +33,12 @@ import java.util.List;
 @OnlyIn(Dist.CLIENT)
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public class MultimeterContainerScreen extends ContainerScreen<MultimeterContainer> {
+public class MultimeterContainerScreen extends AbstractContainerScreen<MultimeterContainer> {
     private final static ResourceLocation TEXTURE = new ResourceLocation(MCPCB.MOD_ID, "textures/gui/container/multimeter.png");
     private final String initialName;
-    private TextFieldWidget name;
+    private EditBox name;
 
-    public MultimeterContainerScreen(MultimeterContainer multimeterContainer, PlayerInventory playerInv, ITextComponent title) {
+    public MultimeterContainerScreen(MultimeterContainer multimeterContainer, Inventory playerInv, Component title) {
         super(multimeterContainer, playerInv, title);
 
         // Set default circuit name to item's name (localized in player's language)
@@ -56,7 +56,7 @@ public class MultimeterContainerScreen extends ContainerScreen<MultimeterContain
             this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
         }
 
-        this.name = new TextFieldWidget(this.font, this.leftPos + 70, this.topPos + 28, 95, 12, new TranslationTextComponent("container.mcpcb.multimeter_container.title"));
+        this.name = new EditBox(this.font, this.leftPos + 70, this.topPos + 28, 95, 12, new TranslatableComponent("container.mcpcb.multimeter_container.title"));
         this.name.setValue(initialName);
         this.name.setCanLoseFocus(false);
         this.name.setTextColor(-1);
@@ -64,7 +64,7 @@ public class MultimeterContainerScreen extends ContainerScreen<MultimeterContain
         this.name.setBordered(false);
         this.name.setMaxLength(MultimeterContainer.MAX_NAME_CHARS);
         this.name.setResponder(this::onNameChanged);
-        this.children.add(this.name);
+        this.addWidget(this.name);
         this.setInitialFocus(this.name);
     }
 
@@ -86,8 +86,8 @@ public class MultimeterContainerScreen extends ContainerScreen<MultimeterContain
     }
 
     @Override
-    public void tick() {
-        super.tick();
+    protected void containerTick() {
+        super.containerTick();
         this.name.tick();
     }
 
@@ -121,19 +121,18 @@ public class MultimeterContainerScreen extends ContainerScreen<MultimeterContain
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(matrixStack);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
         this.name.render(matrixStack, mouseX, mouseY, partialTicks);
         this.renderTooltip(matrixStack, mouseX, mouseY);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    protected void renderBg(MatrixStack matrixStack, float partialTicks, int mouseX, int mouseY) {
+    protected void renderBg(PoseStack matrixStack, float partialTicks, int mouseX, int mouseY) {
         if (this.minecraft != null) {
-            RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-            this.minecraft.getTextureManager().bind(TEXTURE);
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+            RenderSystem.setShaderTexture(0, TEXTURE);
 
             // Base background texture
             this.blit(matrixStack, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
@@ -152,23 +151,22 @@ public class MultimeterContainerScreen extends ContainerScreen<MultimeterContain
             this.blit(matrixStack, this.leftPos + 67, this.topPos + 24, 0, this.imageHeight, 102, 16);
 
             // Render big circuit on left side
-            RenderSystem.pushMatrix();
-
+            PoseStack poseStack = RenderSystem.getModelViewStack();
+            poseStack.pushPose();
             float scale = 3f;
-
-            RenderSystem.scalef(scale, scale, scale);
+            poseStack.scale(scale, scale, scale);
 
             itemRenderer.renderGuiItem(
                     this.menu.getCircuitStack(),
                     (int) ((this.leftPos + 12) / scale), (int) ((this.topPos + 20) / scale)
             );
 
-            RenderSystem.popMatrix();
+            poseStack.popPose();
         }
     }
 
     @Override
-    protected void renderLabels(MatrixStack matrixStack, int mouseX, int mouseY) {
+    protected void renderLabels(PoseStack matrixStack, int mouseX, int mouseY) {
         // Container title and inventory label
         super.renderLabels(matrixStack, mouseX, mouseY);
 
@@ -186,13 +184,13 @@ public class MultimeterContainerScreen extends ContainerScreen<MultimeterContain
     }
 
     @Override
-    protected void renderTooltip(MatrixStack matrixStack, int mouseX, int mouseY) {
+    protected void renderTooltip(PoseStack matrixStack, int mouseX, int mouseY) {
         super.renderTooltip(matrixStack, mouseX, mouseY);
 
         // Tooltips for the areas
         ImmutableList<String> itemKeys = ImmutableList.of("block.minecraft.terracotta", "item.minecraft.redstone", "block.minecraft.redstone_torch");
 
-        List<ITextComponent> list = new ArrayList<>();
+        List<Component> list = new ArrayList<>();
 
         // If mouse is vertically within tooltip areas
         if (mouseY >= this.topPos + 43 && mouseY < this.topPos + 57) {
@@ -202,7 +200,7 @@ public class MultimeterContainerScreen extends ContainerScreen<MultimeterContain
                     .forEach(i -> {
                         int xStart = this.leftPos + 67 + 20 * i;
                         if (mouseX >= xStart && mouseX < xStart + 18) {
-                            list.add(new TranslationTextComponent(itemKeys.get(i)).append(String.format(" x%d", this.menu.getCostArray().get(i))));
+                            list.add(new TranslatableComponent(itemKeys.get(i)).append(String.format(" x%d", this.menu.getCostArray().get(i))));
                         }
                     });
         }

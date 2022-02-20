@@ -1,17 +1,17 @@
 package tchojnacki.mcpcb.client.models;
 
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.model.BakedQuad;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.model.ItemOverrideList;
-import net.minecraft.client.renderer.model.ModelResourceLocation;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockDisplayReader;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.data.IModelData;
 import org.jetbrains.annotations.NotNull;
 import tchojnacki.mcpcb.MCPCB;
@@ -36,14 +36,14 @@ import java.util.Random;
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 public class CircuitItemBaseModel extends IBakedModelParentOverride {
-    private final ItemOverrideList circuitItemOverrideList = new CircuitItemOverrideList();
+    private final ItemOverrides circuitItemOverrideList = new CircuitItemOverrideList();
 
     /**
      * Constructor for the model.
      *
      * @param baseModel base model defined in {@code circuit.json}
      */
-    public CircuitItemBaseModel(IBakedModel baseModel) {
+    public CircuitItemBaseModel(BakedModel baseModel) {
         super(baseModel);
     }
 
@@ -68,13 +68,13 @@ public class CircuitItemBaseModel extends IBakedModelParentOverride {
     }
 
     /**
-     * Returns the override list, which specifies what models to use for which item kinds (based on {@link net.minecraft.item.ItemStack}).
+     * Returns the override list, which specifies what models to use for which item kinds (based on {@link ItemStack}).
      *
      * @return item override list
-     * @see CircuitItemOverrideList#resolve(IBakedModel, ItemStack, ClientWorld, LivingEntity)
+     * @see CircuitItemOverrideList#resolve(BakedModel, ItemStack, ClientLevel, LivingEntity, int)
      */
     @Override
-    public ItemOverrideList getOverrides() {
+    public ItemOverrides getOverrides() {
         return circuitItemOverrideList;
     }
 
@@ -96,7 +96,7 @@ public class CircuitItemBaseModel extends IBakedModelParentOverride {
      */
     @NotNull
     @Override
-    public IModelData getModelData(@NotNull IBlockDisplayReader _world, @NotNull BlockPos _blockPos, @NotNull BlockState _blockState, @NotNull IModelData _data) {
+    public IModelData getModelData(@NotNull BlockAndTintGetter _world, @NotNull BlockPos _blockPos, @NotNull BlockState _blockState, @NotNull IModelData _data) {
         throw new AssertionError("IForgeBakedModel::getModelData should never be called.");
     }
 }

@@ -1,21 +1,21 @@
 package tchojnacki.mcpcb.util;
 
-import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.block.Block;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.world.World;
-import net.minecraftforge.common.extensions.IForgeContainerType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 import tchojnacki.mcpcb.MCPCB;
 import tchojnacki.mcpcb.common.block.BreadboardBlock;
 import tchojnacki.mcpcb.common.block.CircuitBlock;
@@ -42,8 +42,8 @@ public class Registration {
     // Deferred registers
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MCPCB.MOD_ID);
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MCPCB.MOD_ID);
-    public static final DeferredRegister<ContainerType<?>> CONTAINERS = DeferredRegister.create(ForgeRegistries.CONTAINERS, MCPCB.MOD_ID);
-    public static final DeferredRegister<TileEntityType<?>> TILE_ENTITIES = DeferredRegister.create(ForgeRegistries.TILE_ENTITIES, MCPCB.MOD_ID);
+    public static final DeferredRegister<MenuType<?>> CONTAINERS = DeferredRegister.create(ForgeRegistries.CONTAINERS, MCPCB.MOD_ID);
+    public static final DeferredRegister<BlockEntityType<?>> TILE_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITIES, MCPCB.MOD_ID);
 
     // Blocks
     public static final RegistryObject<Block> BREADBOARD_BLOCK = Registration.BLOCKS.register(BreadboardBlock.ID, BreadboardBlock::new);
@@ -59,12 +59,12 @@ public class Registration {
     public static final RegistryObject<Item> CIRCUIT_BLOCK_ITEM = registerBlockItem(CIRCUIT_BLOCK, false, CircuitBlock::onCrafted);
 
     // Containers
-    public static final RegistryObject<ContainerType<ScrewdriverContainer>> SCREWDRIVER_CONTAINER = Registration.CONTAINERS.register(ScrewdriverContainer.ID, () -> IForgeContainerType.create(ScrewdriverContainer::createContainerClientSide));
-    public static final RegistryObject<ContainerType<MultimeterContainer>> MULTIMETER_CONTAINER = Registration.CONTAINERS.register(MultimeterContainer.ID, () -> IForgeContainerType.create(MultimeterContainer::createContainerClientSide));
+    public static final RegistryObject<MenuType<ScrewdriverContainer>> SCREWDRIVER_CONTAINER = Registration.CONTAINERS.register(ScrewdriverContainer.ID, () -> IForgeMenuType.create(ScrewdriverContainer::createContainerClientSide));
+    public static final RegistryObject<MenuType<MultimeterContainer>> MULTIMETER_CONTAINER = Registration.CONTAINERS.register(MultimeterContainer.ID, () -> IForgeMenuType.create(MultimeterContainer::createContainerClientSide));
 
     // Tile entities
     @SuppressWarnings("ConstantConditions")
-    public static final RegistryObject<TileEntityType<CircuitBlockTileEntity>> CIRCUIT_BLOCK_TILE_ENTITY = Registration.TILE_ENTITIES.register(CircuitBlockTileEntity.ID, () -> TileEntityType.Builder.of(CircuitBlockTileEntity::new, CIRCUIT_BLOCK.get()).build(null));
+    public static final RegistryObject<BlockEntityType<CircuitBlockTileEntity>> CIRCUIT_BLOCK_TILE_ENTITY = Registration.TILE_ENTITIES.register(CircuitBlockTileEntity.ID, () -> BlockEntityType.Builder.of(CircuitBlockTileEntity::new, CIRCUIT_BLOCK.get()).build(null));
 
     public static void register() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -94,7 +94,7 @@ public class Registration {
      * @param onCrafted optional handler for "onCraftedBy" event, pass null if unused
      * @return registry object containing the block item
      */
-    private static RegistryObject<Item> registerBlockItem(RegistryObject<Block> block, boolean putInGroup, @Nullable BiConsumer<ItemStack, PlayerEntity> onCrafted) {
+    private static RegistryObject<Item> registerBlockItem(RegistryObject<Block> block, boolean putInGroup, @Nullable BiConsumer<ItemStack, Player> onCrafted) {
         return Registration.ITEMS.register(
                 block.getId().getPath(),
                 () -> new BlockItem(
@@ -102,7 +102,7 @@ public class Registration {
                         putInGroup ? new Item.Properties().tab(MCPCB.MAIN_GROUP) : new Item.Properties()
                 ) {
                     @Override
-                    public void onCraftedBy(ItemStack itemStack, World world, PlayerEntity playerEntity) {
+                    public void onCraftedBy(ItemStack itemStack, Level world, Player playerEntity) {
                         super.onCraftedBy(itemStack, world, playerEntity);
 
                         if (onCrafted != null) {

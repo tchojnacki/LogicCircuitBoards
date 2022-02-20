@@ -1,13 +1,12 @@
 package tchojnacki.mcpcb.common.block;
 
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.material.PushReaction;
-import net.minecraft.state.EnumProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraftforge.common.ToolType;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.material.PushReaction;
 import tchojnacki.mcpcb.logic.BreadboardKindEnum;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -23,8 +22,6 @@ public class BreadboardBlock extends Block {
         super(
                 Properties
                         .of(Material.CLAY)
-                        .harvestLevel(0) // no pickaxe required
-                        .harvestTool(ToolType.PICKAXE)
                         .strength(0.1f, 5) // fast breaking
                         .isRedstoneConductor((_blockState, _blockReader, _blockPos) -> false) // doesn't conduct power
         );
@@ -41,7 +38,7 @@ public class BreadboardBlock extends Block {
      * @param builder state container builder
      */
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(KIND);
     }
 

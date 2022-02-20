@@ -1,7 +1,7 @@
 package tchojnacki.mcpcb.logic;
 
 import com.google.common.collect.ImmutableMap;
-import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.MethodsReturnNonnullByDefault;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Arrays;
@@ -124,7 +124,7 @@ public class SideBoolMap {
         byte encoding = 0;
 
         for (int i = 0; i < 4; i++) {
-            if (data.get(RelDir.values()[i])) {
+            if (Boolean.TRUE.equals(data.get(RelDir.values()[i]))) {
                 encoding += 1 << i;
             }
         }
@@ -133,7 +133,7 @@ public class SideBoolMap {
     }
 
     public boolean get(RelDir side) {
-        return data.get(side);
+        return Boolean.TRUE.equals(data.get(side));
     }
 
     public boolean isntEmpty() {

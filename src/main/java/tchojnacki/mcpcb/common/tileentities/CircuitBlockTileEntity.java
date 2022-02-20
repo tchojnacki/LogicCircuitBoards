@@ -1,13 +1,16 @@
 package tchojnacki.mcpcb.common.tileentities;
 
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SUpdateTileEntityPacket;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import tchojnacki.mcpcb.logic.RelDir;
 import tchojnacki.mcpcb.logic.SideBoolMap;
@@ -15,6 +18,7 @@ import tchojnacki.mcpcb.logic.TruthTable;
 import tchojnacki.mcpcb.util.Registration;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Objects;
 
 /**
  * Tile entity for the circuit block. Holds its custom name, the truth table as well as queued and current outputs.
@@ -23,10 +27,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
  */
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public class CircuitBlockTileEntity extends TileEntity {
+public class CircuitBlockTileEntity extends BlockEntity {
     public final static String ID = "circuit_tile_entity";
 
-    private ITextComponent customName;
+    private TextComponent customName;
 
     private TruthTable truthTable = TruthTable.empty();
 
@@ -40,8 +44,8 @@ public class CircuitBlockTileEntity extends TileEntity {
      */
     private SideBoolMap queuedOutput = SideBoolMap.getEmpty();
 
-    public CircuitBlockTileEntity() {
-        super(Registration.CIRCUIT_BLOCK_TILE_ENTITY.get());
+    public CircuitBlockTileEntity(BlockPos blockPos, BlockState blockState) {
+        super(Registration.CIRCUIT_BLOCK_TILE_ENTITY.get(), blockPos, blockState);
     }
 
     public SideBoolMap getActualOutput() {
@@ -95,12 +99,12 @@ public class CircuitBlockTileEntity extends TileEntity {
         return truthTable.getTexture();
     }
 
-    public void setCustomName(ITextComponent name) {
+    public void setCustomName(TextComponent name) {
         this.customName = name;
     }
 
     @Nullable
-    public ITextComponent getCustomName() {
+    public TextComponent getCustomName() {
         return customName;
     }
 
@@ -112,16 +116,15 @@ public class CircuitBlockTileEntity extends TileEntity {
      * Save the tile entity data to NBT tag.
      *
      * @param parentTag tag to which we write the data
-     * @return modified tag
      */
     @Override
-    public CompoundNBT save(CompoundNBT parentTag) {
-        super.save(parentTag);
+    public void saveAdditional(CompoundTag parentTag) {
+        super.saveAdditional(parentTag);
 
         parentTag.put("TruthTable", truthTable.toNBT());
 
         if (customName != null) {
-            parentTag.putString("CustomName", ITextComponent.Serializer.toJson(customName));
+            parentTag.putString("CustomName", TextComponent.Serializer.toJson(customName));
         }
 
         if (actualOutput.isntEmpty()) {
@@ -131,8 +134,6 @@ public class CircuitBlockTileEntity extends TileEntity {
         if (queuedOutput.isntEmpty()) {
             parentTag.putByte("QueuedOutput", queuedOutput.toByte());
         }
-
-        return parentTag;
     }
 
     /**
@@ -140,12 +141,11 @@ public class CircuitBlockTileEntity extends TileEntity {
      *
      * @return tile entity update packet
      */
-    @Nullable
     @Override
-    public SUpdateTileEntityPacket getUpdatePacket() {
-        CompoundNBT tag = new CompoundNBT();
-        save(tag);
-        return new SUpdateTileEntityPacket(worldPosition, 42, tag);
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        CompoundTag tag = new CompoundTag();
+        saveAdditional(tag);
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     /**
@@ -154,21 +154,20 @@ public class CircuitBlockTileEntity extends TileEntity {
      * @return updated tag
      */
     @Override
-    public CompoundNBT getUpdateTag() {
-        CompoundNBT tag = new CompoundNBT();
-        save(tag);
+    public CompoundTag getUpdateTag() {
+        CompoundTag tag = new CompoundTag();
+        saveAdditional(tag);
         return tag;
     }
 
     /**
      * Load the tile entity data from an NBT tag.
      *
-     * @param blockState block's state
      * @param parentTag tag we are writing into
      */
     @Override
-    public void load(BlockState blockState, CompoundNBT parentTag) {
-        super.load(blockState, parentTag);
+    public void load(CompoundTag parentTag) {
+        super.load(parentTag);
 
         setFromParentTag(parentTag);
     }
@@ -178,20 +177,20 @@ public class CircuitBlockTileEntity extends TileEntity {
      *
      * @param parentTag tag we are writing into
      */
-    public void setFromParentTag(CompoundNBT parentTag) {
-        if (parentTag.contains("TruthTable", Constants.NBT.TAG_COMPOUND)) {
+    public void setFromParentTag(CompoundTag parentTag) {
+        if (parentTag.contains("TruthTable", CompoundTag.TAG_COMPOUND)) {
             truthTable = TruthTable.fromNBT(parentTag.getCompound("TruthTable"));
         }
 
-        if (parentTag.contains("CustomName", Constants.NBT.TAG_STRING)) {
-            customName = ITextComponent.Serializer.fromJson(parentTag.getString("CustomName"));
+        if (parentTag.contains("CustomName", CompoundTag.TAG_STRING)) {
+            customName = (TextComponent) Component.Serializer.fromJson(parentTag.getString("CustomName"));
         }
 
-        if (parentTag.contains("ActualOutput", Constants.NBT.TAG_BYTE)) {
+        if (parentTag.contains("ActualOutput", CompoundTag.TAG_BYTE)) {
             actualOutput = SideBoolMap.fromByte(parentTag.getByte("ActualOutput"));
         }
 
-        if (parentTag.contains("QueuedOutput", Constants.NBT.TAG_BYTE)) {
+        if (parentTag.contains("QueuedOutput", CompoundTag.TAG_BYTE)) {
             queuedOutput = SideBoolMap.fromByte(parentTag.getByte("QueuedOutput"));
         }
     }
@@ -203,21 +202,19 @@ public class CircuitBlockTileEntity extends TileEntity {
      * @param pkt tile entity update packet
      */
     @Override
-    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
         if (level != null) {
-            BlockState blockState = level.getBlockState(worldPosition);
-            load(blockState, pkt.getTag());
+            load(Objects.requireNonNull(pkt.getTag()));
         }
     }
 
     /**
      * Loading data during batch tile entity updates.
      *
-     * @param blockState block's state
      * @param tag the tag we should load
      */
     @Override
-    public void handleUpdateTag(BlockState blockState, CompoundNBT tag) {
-        load(blockState, tag);
+    public void handleUpdateTag(CompoundTag tag) {
+        load(tag);
     }
 }

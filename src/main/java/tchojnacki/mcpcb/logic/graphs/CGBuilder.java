@@ -1,14 +1,14 @@
 package tchojnacki.mcpcb.logic.graphs;
 
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.block.Block;
-import net.minecraft.block.RedstoneTorchBlock;
-import net.minecraft.block.RedstoneWallTorchBlock;
-import net.minecraft.block.RedstoneWireBlock;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RedStoneWireBlock;
+import net.minecraft.world.level.block.RedstoneTorchBlock;
+import net.minecraft.world.level.block.RedstoneWallTorchBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import tchojnacki.mcpcb.common.block.CircuitBlock;
 import tchojnacki.mcpcb.common.tileentities.CircuitBlockTileEntity;
 import tchojnacki.mcpcb.logic.BoardManager;
@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.HashMap;
 
-import static net.minecraft.block.HorizontalBlock.FACING;
+import static net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING;
 
 /**
  * Circuit graph builder.
@@ -34,7 +34,7 @@ import static net.minecraft.block.HorizontalBlock.FACING;
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 public class CGBuilder {
-    private final World world;
+    private final Level world;
 
     private final BoardManager boardManager;
 
@@ -62,7 +62,7 @@ public class CGBuilder {
      * @param boardManager board manager storing breadboard location and other info
      * @return full circuit graph representing the built circuit
      */
-    public static FullCircuitGraph create(World world, BoardManager boardManager) {
+    public static FullCircuitGraph create(Level world, BoardManager boardManager) {
         CGBuilder graphBuilder = new CGBuilder(world, boardManager);
         graphBuilder.prepareInputs();
         graphBuilder.buildFromOutputs();
@@ -72,9 +72,9 @@ public class CGBuilder {
     /**
      * Private constructor, use factory method for building circuit graphs instead.
      *
-     * @see #create(World, BoardManager)
+     * @see #create(Level, BoardManager)
      */
-    private CGBuilder(World world, BoardManager boardManager) {
+    private CGBuilder(Level world, BoardManager boardManager) {
         this.world = world;
         this.boardManager = boardManager;
     }
@@ -102,7 +102,7 @@ public class CGBuilder {
             for (BlockPos socketBlock : socket.getBlocks()) {
                 BlockPos curOutputBlock = socketBlock.above();
 
-                if (world.getBlockState(curOutputBlock).getBlock() instanceof RedstoneWireBlock) {
+                if (world.getBlockState(curOutputBlock).getBlock() instanceof RedStoneWireBlock) {
                     traceWire(outputNode, curOutputBlock);
                 }
             }
@@ -161,7 +161,7 @@ public class CGBuilder {
             for (Direction dir : Direction.Plane.HORIZONTAL) {
                 BlockPos offsetPos = tracePos.above().relative(dir);
 
-                if (world.getBlockState(offsetPos).getBlock() instanceof RedstoneWireBlock) {
+                if (world.getBlockState(offsetPos).getBlock() instanceof RedStoneWireBlock) {
                     traceWire(wireNode, offsetPos);
                 }
             }
@@ -175,7 +175,7 @@ public class CGBuilder {
             } else {
                 traceInwards(wireNode, offsetPos, dir);
 
-                if (world.getBlockState(offsetPos.below()).getBlock() instanceof RedstoneWireBlock) {
+                if (world.getBlockState(offsetPos.below()).getBlock() instanceof RedStoneWireBlock) {
                     traceWire(wireNode, offsetPos.below());
                 }
             }
@@ -323,8 +323,8 @@ public class CGBuilder {
                     traceTorch(traceSource, offsetPos);
                 }
             } else {
-                if (!mustBeStrong && block instanceof RedstoneWireBlock) {
-                    if (dir.equals(Direction.UP) || world.getBlockState(offsetPos).getValue(RedstoneWireBlock.PROPERTY_BY_DIRECTION.get(dir.getOpposite())).isConnected()) {
+                if (!mustBeStrong && block instanceof RedStoneWireBlock) {
+                    if (dir.equals(Direction.UP) || world.getBlockState(offsetPos).getValue(RedStoneWireBlock.PROPERTY_BY_DIRECTION.get(dir.getOpposite())).isConnected()) {
                         traceWire(traceSource, offsetPos);
                     }
                 }
@@ -355,7 +355,7 @@ public class CGBuilder {
 
         Block block = world.getBlockState(offsetPos).getBlock();
 
-        if (block instanceof RedstoneWireBlock) {
+        if (block instanceof RedStoneWireBlock) {
             traceWire(traceSource, offsetPos);
         } else if (block instanceof RedstoneTorchBlock) {
             traceTorch(traceSource, offsetPos);
@@ -382,11 +382,9 @@ public class CGBuilder {
             throw new IllegalArgumentException("Block is not a circuit.");
         }
 
-        TileEntity tileEntity = world.getBlockEntity(tracePos);
+        BlockEntity tileEntity = world.getBlockEntity(tracePos);
 
-        if (tileEntity instanceof CircuitBlockTileEntity) {
-            CircuitBlockTileEntity circuitEntity = (CircuitBlockTileEntity) tileEntity;
-
+        if (tileEntity instanceof CircuitBlockTileEntity circuitEntity) {
             RelDir relDir = RelDir.getOffset(world.getBlockState(tracePos).getValue(FACING), facingDir);
 
             if (circuitEntity.hasOutputOnSide(relDir)) {

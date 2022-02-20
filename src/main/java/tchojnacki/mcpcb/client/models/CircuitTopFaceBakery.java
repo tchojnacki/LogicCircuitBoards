@@ -2,18 +2,18 @@ package tchojnacki.mcpcb.client.models;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.model.BakedQuad;
-import net.minecraft.client.renderer.model.BlockFaceUV;
-import net.minecraft.client.renderer.model.BlockPartFace;
-import net.minecraft.client.renderer.model.FaceBakery;
-import net.minecraft.inventory.container.PlayerContainer;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.client.model.SimpleModelTransform;
+import com.mojang.math.Vector3f;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockElementFace;
+import net.minecraft.client.renderer.block.model.BlockFaceUV;
+import net.minecraft.client.renderer.block.model.FaceBakery;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.client.model.ForgeModelBakery;
+import net.minecraftforge.client.model.SimpleModelState;
 import net.minecraftforge.client.model.data.IModelData;
 import tchojnacki.mcpcb.logic.KnownTable;
 
@@ -141,7 +141,7 @@ public final class CircuitTopFaceBakery {
                 2, 2, 14, 14,
                 2, 2, 14, 14,
                 DIRECTIONS.contains(facing) ? DIRECTIONS.indexOf(facing) * 90 : 0, // Rotate texture to match facing direction
-                CENTER_TEXTURE_MAP.getOrDefault(centerTextureName, CENTER_TEXTURE_MAP.get(KnownTable.DEFAULT_TEXTURE))
+                Objects.requireNonNull(CENTER_TEXTURE_MAP.getOrDefault(centerTextureName, CENTER_TEXTURE_MAP.get(KnownTable.DEFAULT_TEXTURE)))
         ));
 
         return builder.build();
@@ -167,7 +167,7 @@ public final class CircuitTopFaceBakery {
         return FACE_BAKERY.bakeQuad(
                 new Vector3f(x1, 2, y1), // Circuit's top face is at height 2
                 new Vector3f(x2, 2, y2), // Circuit's top face is at height 2
-                new BlockPartFace(
+                new BlockElementFace(
                         null, // Face culling - none for this case because circuit's top can't touch any blocks
                         -1, // Disable tinting
                         "", // Dummy texture name, unused
@@ -175,11 +175,11 @@ public final class CircuitTopFaceBakery {
                                 new float[]{u1, v1, u2, v2}, uvRot // Texture's u, v and rotation
                         )
                 ),
-                Objects.requireNonNull(ModelLoader.instance()).getSpriteMap().getAtlas(PlayerContainer.BLOCK_ATLAS).getSprite(
+                Objects.requireNonNull(ForgeModelBakery.instance()).getSpriteMap().getAtlas(InventoryMenu.BLOCK_ATLAS).getSprite(
                         resourceLocation // Get texture from Minecraft's block atlas (it was put there in ClientRegistration)
                 ),
                 Direction.UP, // Face's direction
-                SimpleModelTransform.IDENTITY, // No transformation
+                SimpleModelState.IDENTITY, // No transformation
                 null, // No face rotation
                 true, // Shading
                 resourceLocation // Dummy texture for error messages

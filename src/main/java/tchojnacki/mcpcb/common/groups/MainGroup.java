@@ -1,8 +1,8 @@
 package tchojnacki.mcpcb.common.groups;
 
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
 import tchojnacki.mcpcb.util.Registration;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -12,7 +12,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  */
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public class MainGroup extends ItemGroup {
+public class MainGroup extends CreativeModeTab {
     public static final String ID = "mcpcb_main_tab";
 
     /**

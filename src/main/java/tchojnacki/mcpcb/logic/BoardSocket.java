@@ -1,10 +1,11 @@
 package tchojnacki.mcpcb.logic;
 
 import com.google.common.collect.ImmutableList;
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.inventory.DataSlot;
+import net.minecraft.world.level.Level;
 import tchojnacki.mcpcb.common.block.BreadboardBlock;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -32,7 +33,7 @@ public class BoardSocket {
      * @param state new state
      * @param world breadboard's world
      */
-    public void setState(State state, World world) {
+    public void setState(State state, Level world) {
         this.state = state;
 
         BreadboardKindEnum kind = BreadboardKindEnum.getKindForSocket(this);
@@ -69,7 +70,7 @@ public class BoardSocket {
      * Enum holding the state of the breadboard socket.
      * A socket may be an input (1), output (2), or neither (0).
      * In some places state is passed as a pure integer because Minecraft's existing
-     * codebase requires it (for instance {@link net.minecraft.util.IntReferenceHolder}).
+     * codebase requires it (for instance {@link DataSlot}).
      * In any other place, the enum is used.
      */
     public enum State {
@@ -88,16 +89,12 @@ public class BoardSocket {
         }
 
         public static State fromNumber(int number) throws IllegalArgumentException {
-            switch (number) {
-                case 0:
-                    return Empty;
-                case 1:
-                    return Input;
-                case 2:
-                    return Output;
-                default:
-                    throw new IllegalArgumentException("Incorrect state number.");
-            }
+            return switch (number) {
+                case 0 -> Empty;
+                case 1 -> Input;
+                case 2 -> Output;
+                default -> throw new IllegalArgumentException("Incorrect state number.");
+            };
         }
     }
 }

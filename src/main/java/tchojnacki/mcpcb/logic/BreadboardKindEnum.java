@@ -1,7 +1,7 @@
 package tchojnacki.mcpcb.logic;
 
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.util.IStringSerializable;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.util.StringRepresentable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -15,7 +15,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  */
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public enum BreadboardKindEnum implements IStringSerializable {
+public enum BreadboardKindEnum implements StringRepresentable {
     NORMAL,
     // Inputs
     INPUT_NORTH,
@@ -29,22 +29,11 @@ public enum BreadboardKindEnum implements IStringSerializable {
     OUTPUT_WEST;
 
     public BoardSocket.State getState() {
-        switch (this) {
-            case NORMAL:
-                return BoardSocket.State.Empty;
-            case INPUT_NORTH:
-            case INPUT_EAST:
-            case INPUT_SOUTH:
-            case INPUT_WEST:
-                return BoardSocket.State.Input;
-            case OUTPUT_NORTH:
-            case OUTPUT_EAST:
-            case OUTPUT_SOUTH:
-            case OUTPUT_WEST:
-                return BoardSocket.State.Output;
-            default:
-                throw new AssertionError("Illegal breadboard kind.");
-        }
+        return switch (this) {
+            case NORMAL -> BoardSocket.State.Empty;
+            case INPUT_NORTH, INPUT_EAST, INPUT_SOUTH, INPUT_WEST -> BoardSocket.State.Input;
+            case OUTPUT_NORTH, OUTPUT_EAST, OUTPUT_SOUTH, OUTPUT_WEST -> BoardSocket.State.Output;
+        };
     }
 
     public static BreadboardKindEnum getKindForSocket(BoardSocket socket) throws IllegalArgumentException {
@@ -55,56 +44,32 @@ public enum BreadboardKindEnum implements IStringSerializable {
 
         int socketNum = socket.getState().getNumber();
 
-        switch (data2D * 3 + socketNum) {
-            case 0:
-            case 3:
-            case 6:
-            case 9:
-                return NORMAL;
-            case 1:
-                return INPUT_SOUTH;
-            case 2:
-                return OUTPUT_SOUTH;
-            case 4:
-                return INPUT_WEST;
-            case 5:
-                return OUTPUT_WEST;
-            case 7:
-                return INPUT_NORTH;
-            case 8:
-                return OUTPUT_NORTH;
-            case 10:
-                return INPUT_EAST;
-            case 11:
-                return OUTPUT_EAST;
-            default:
-                throw new IllegalArgumentException("Illegal direction state combination.");
-        }
+        return switch (data2D * 3 + socketNum) {
+            case 0, 3, 6, 9 -> NORMAL;
+            case 1 -> INPUT_SOUTH;
+            case 2 -> OUTPUT_SOUTH;
+            case 4 -> INPUT_WEST;
+            case 5 -> OUTPUT_WEST;
+            case 7 -> INPUT_NORTH;
+            case 8 -> OUTPUT_NORTH;
+            case 10 -> INPUT_EAST;
+            case 11 -> OUTPUT_EAST;
+            default -> throw new IllegalArgumentException("Illegal direction state combination.");
+        };
     }
 
     @Override
     public String getSerializedName() {
-        switch (this) {
-            case NORMAL:
-                return "normal";
-            case INPUT_NORTH:
-                return "input_north";
-            case INPUT_EAST:
-                return "input_east";
-            case INPUT_SOUTH:
-                return "input_south";
-            case INPUT_WEST:
-                return "input_west";
-            case OUTPUT_NORTH:
-                return "output_north";
-            case OUTPUT_EAST:
-                return "output_east";
-            case OUTPUT_SOUTH:
-                return "output_south";
-            case OUTPUT_WEST:
-                return "output_west";
-            default:
-                throw new AssertionError("Illegal breadboard kind.");
-        }
+        return switch (this) {
+            case NORMAL -> "normal";
+            case INPUT_NORTH -> "input_north";
+            case INPUT_EAST -> "input_east";
+            case INPUT_SOUTH -> "input_south";
+            case INPUT_WEST -> "input_west";
+            case OUTPUT_NORTH -> "output_north";
+            case OUTPUT_EAST -> "output_east";
+            case OUTPUT_SOUTH -> "output_south";
+            case OUTPUT_WEST -> "output_west";
+        };
     }
 }

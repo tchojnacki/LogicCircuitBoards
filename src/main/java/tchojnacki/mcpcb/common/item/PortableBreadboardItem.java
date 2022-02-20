@@ -1,17 +1,17 @@
 package tchojnacki.mcpcb.common.item;
 
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ChatType;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
 import tchojnacki.mcpcb.MCPCB;
 import tchojnacki.mcpcb.logic.BoardManager;
 import tchojnacki.mcpcb.util.Registration;
@@ -40,9 +40,9 @@ public class PortableBreadboardItem extends Item {
      * @return result of the action
      */
     @Override
-    public ActionResultType useOn(ItemUseContext context) {
-        World world = context.getLevel();
-        PlayerEntity player = context.getPlayer();
+    public InteractionResult useOn(UseOnContext context) {
+        Level world = context.getLevel();
+        Player player = context.getPlayer();
 
         if (player != null) {
             // Set item cooldown to make sure the item doesn't lag the game
@@ -60,13 +60,13 @@ public class PortableBreadboardItem extends Item {
                     BlockPos currentPos = startPosition.offset(x, 0, z);
                     if (!world.isEmptyBlock(currentPos)) {
                         if (!world.isClientSide()) {
-                            ((ServerPlayerEntity) player).sendMessage(
-                                    new TranslationTextComponent(String.format("util.%s.%s.space_occupied", MCPCB.MOD_ID, ID)),
+                            ((ServerPlayer) player).sendMessage(
+                                    new TranslatableComponent(String.format("util.%s.%s.space_occupied", MCPCB.MOD_ID, ID)),
                                     ChatType.GAME_INFO, Util.NIL_UUID
                             );
                         }
 
-                        return ActionResultType.FAIL;
+                        return InteractionResult.FAIL;
                     }
                 }
             }
@@ -83,13 +83,13 @@ public class PortableBreadboardItem extends Item {
             }
 
             // Remove item unless you are using creative
-            if (!player.abilities.instabuild) {
+            if (!player.getAbilities().instabuild) {
                 context.getItemInHand().shrink(1);
             }
 
-            return ActionResultType.sidedSuccess(world.isClientSide());
+            return InteractionResult.sidedSuccess(world.isClientSide());
         }
 
-        return ActionResultType.FAIL;
+        return InteractionResult.FAIL;
     }
 }

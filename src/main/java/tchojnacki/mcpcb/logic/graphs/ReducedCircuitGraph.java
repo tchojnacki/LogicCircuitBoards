@@ -1,7 +1,7 @@
 package tchojnacki.mcpcb.logic.graphs;
 
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.util.Direction;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.Direction;
 import tchojnacki.mcpcb.logic.RelDir;
 import tchojnacki.mcpcb.logic.SideBoolMap;
 import tchojnacki.mcpcb.logic.TruthTable;
@@ -93,8 +93,7 @@ public class ReducedCircuitGraph extends CircuitGraph {
             int inputSetMask = 1 << Arrays.asList(circuitInputs.toArray()).indexOf(nodeId);
 
             return (inputSetMask & inputSet) != 0;
-        } else if (node instanceof CGNodeCircuitOutput) {
-            CGNodeCircuitOutput outputNode = (CGNodeCircuitOutput) node;
+        } else if (node instanceof CGNodeCircuitOutput outputNode) {
             CGNodeCircuit circuitNode = (CGNodeCircuit) getNode(outputNode.getCircuit());
 
             SideBoolMap circuitInputs = SideBoolMap.constructFromIterable(

@@ -1,23 +1,23 @@
 package tchojnacki.mcpcb.common.item;
 
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.container.IContainerProvider;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.inventory.container.SimpleNamedContainerProvider;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.ChatType;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.network.NetworkHooks;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.Util;
+import net.minecraft.network.chat.ChatType;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuConstructor;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.network.NetworkHooks;
 import tchojnacki.mcpcb.MCPCB;
+import tchojnacki.mcpcb.common.container.ScrewdriverContainer;
 import tchojnacki.mcpcb.logic.BoardManager;
 import tchojnacki.mcpcb.logic.BoardManagerException;
-import tchojnacki.mcpcb.common.container.ScrewdriverContainer;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -45,29 +45,29 @@ public class ScrewdriverItem extends Item {
      * @see ScrewdriverContainer
      */
     @Override
-    public ActionResultType useOn(ItemUseContext context) {
-        World world = context.getLevel();
-        PlayerEntity player = context.getPlayer();
+    public InteractionResult useOn(UseOnContext context) {
+        Level world = context.getLevel();
+        Player player = context.getPlayer();
 
         try {
             BoardManager boardManager = new BoardManager(world, context.getClickedPos());
 
             if (player != null && !world.isClientSide()) {
-                IContainerProvider provider = (int winId, PlayerInventory _playerInv, PlayerEntity _playerEnt) -> ScrewdriverContainer.createContainerServerSide(winId, boardManager);
-                INamedContainerProvider namedProvider = new SimpleNamedContainerProvider(provider, ScrewdriverContainer.TITLE);
-                NetworkHooks.openGui((ServerPlayerEntity) player, namedProvider);
+                MenuConstructor provider = (int winId, Inventory _playerInv, Player _playerEnt) -> ScrewdriverContainer.createContainerServerSide(winId, boardManager);
+                MenuProvider namedProvider = new SimpleMenuProvider(provider, ScrewdriverContainer.TITLE);
+                NetworkHooks.openGui((ServerPlayer) player, namedProvider);
             }
 
-            return ActionResultType.SUCCESS;
+            return InteractionResult.SUCCESS;
         } catch (BoardManagerException error) {
             if (player != null && !world.isClientSide()) {
-                ((ServerPlayerEntity) player).sendMessage(
+                ((ServerPlayer) player).sendMessage(
                         error.getTranslationTextComponent(),
                         ChatType.GAME_INFO, Util.NIL_UUID
                 );
             }
 
-            return ActionResultType.FAIL;
+            return InteractionResult.FAIL;
         }
     }
 }

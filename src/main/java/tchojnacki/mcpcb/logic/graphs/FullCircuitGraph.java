@@ -1,6 +1,6 @@
 package tchojnacki.mcpcb.logic.graphs;
 
-import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import tchojnacki.mcpcb.logic.graphs.nodes.CGNodeWire;
 
 import javax.annotation.ParametersAreNonnullByDefault;

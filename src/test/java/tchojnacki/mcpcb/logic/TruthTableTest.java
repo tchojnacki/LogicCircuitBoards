@@ -1,6 +1,6 @@
 package tchojnacki.mcpcb.logic;
 
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -110,10 +110,10 @@ class TruthTableTest {
         assertEquals(tableAdder.getSignature(), TruthTable.fromNBT(tableAdder.toNBT()).getSignature());
         assertEquals(tableEmpty.getSignature(), TruthTable.fromNBT(tableEmpty.toNBT()).getSignature());
 
-        CompoundNBT tag = tableNand.toNBT();
+        CompoundTag tag = tableNand.toNBT();
         assertEquals(tag, TruthTable.fromNBT(tag).toNBT());
 
-        assertEquals("0->0;", TruthTable.fromNBT(new CompoundNBT()).getSignature());
+        assertEquals("0->0;", TruthTable.fromNBT(new CompoundTag()).getSignature());
     }
 
     @Test

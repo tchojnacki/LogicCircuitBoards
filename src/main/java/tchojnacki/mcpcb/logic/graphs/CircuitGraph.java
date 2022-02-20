@@ -1,7 +1,7 @@
 package tchojnacki.mcpcb.logic.graphs;
 
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.util.Direction;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.Direction;
 import tchojnacki.mcpcb.logic.BoardSocket;
 import tchojnacki.mcpcb.logic.RelDir;
 import tchojnacki.mcpcb.logic.TruthTable;

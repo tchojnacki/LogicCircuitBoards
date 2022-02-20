@@ -1,11 +1,11 @@
 package tchojnacki.mcpcb.logic;
 
 import com.google.common.collect.ImmutableMap;
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.block.BlockState;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import tchojnacki.mcpcb.common.block.BreadboardBlock;
 import tchojnacki.mcpcb.logic.graphs.CGBuilder;
 import tchojnacki.mcpcb.logic.graphs.ReducedCircuitGraph;
@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 public class BoardManager {
     public final static int BOARD_SIZE = 8;
 
-    private final World world;
+    private final Level world;
     private final BlockPos nwCorner;
     private final ImmutableMap<Direction, BoardSocket> sockets;
 
@@ -40,11 +41,11 @@ public class BoardManager {
             throw new IllegalArgumentException("Illegal direction.");
         }
 
-        sockets.get(direction).setState(state, world);
+        Objects.requireNonNull(sockets.get(direction)).setState(state, world);
     }
 
     public BoardSocket getSocket(Direction direction) {
-        return sockets.get(direction);
+        return Objects.requireNonNull(sockets.get(direction));
     }
 
     /**
@@ -77,7 +78,7 @@ public class BoardManager {
      * @see CGBuilder
      */
     @Nullable
-    public TruthTable generateTruthTable(World world) {
+    public TruthTable generateTruthTable(Level world) {
         ReducedCircuitGraph reducedGraph = CGBuilder
                 .create(world, this)
                 .reduce();
@@ -116,7 +117,7 @@ public class BoardManager {
      * @param blockPos any of the blocks contained in the breadboard
      * @throws BoardManagerException see method desc
      */
-    public BoardManager(World world, BlockPos blockPos) throws BoardManagerException {
+    public BoardManager(Level world, BlockPos blockPos) throws BoardManagerException {
         this.world = world;
 
         if (!(world.getBlockState(blockPos).getBlock() instanceof BreadboardBlock)) {

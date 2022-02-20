@@ -1,8 +1,8 @@
 package tchojnacki.mcpcb.logic;
 
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.util.Direction;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.TranslatableComponent;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
@@ -58,27 +58,18 @@ public enum RelDir {
         return list;
     }
 
-    public TranslationTextComponent translationComponent() {
+    public TranslatableComponent translationComponent() {
         String key = "util.mcpcb.direction.";
 
         switch (this) {
-            case FRONT:
-                key += "front";
-                break;
-            case RIGHT:
-                key += "right";
-                break;
-            case BACK:
-                key += "back";
-                break;
-            case LEFT:
-                key += "left";
-                break;
-            default:
-                throw new AssertionError("Illegal relative direction.");
+            case FRONT -> key += "front";
+            case RIGHT -> key += "right";
+            case BACK -> key += "back";
+            case LEFT -> key += "left";
+            default -> throw new AssertionError("Illegal relative direction.");
         }
 
-        return new TranslationTextComponent(key);
+        return new TranslatableComponent(key);
     }
 
     /**
@@ -89,18 +80,12 @@ public enum RelDir {
      * @return direction offset from {@code initialDirection} by value of this enum
      */
     public Direction offsetFrom(Direction initialDirection) {
-        switch (this) {
-            case FRONT:
-                return initialDirection;
-            case RIGHT:
-                return initialDirection.getClockWise();
-            case BACK:
-                return initialDirection.getOpposite();
-            case LEFT:
-                return initialDirection.getCounterClockWise();
-            default:
-                throw new AssertionError("Illegal relative direction.");
-        }
+        return switch (this) {
+            case FRONT -> initialDirection;
+            case RIGHT -> initialDirection.getClockWise();
+            case BACK -> initialDirection.getOpposite();
+            case LEFT -> initialDirection.getCounterClockWise();
+        };
     }
 
     /**
@@ -109,18 +94,12 @@ public enum RelDir {
      * @return clockwise transform of this enum value
      */
     public RelDir getClockWise() {
-        switch (this) {
-            case FRONT:
-                return RIGHT;
-            case RIGHT:
-                return BACK;
-            case BACK:
-                return LEFT;
-            case LEFT:
-                return FRONT;
-            default:
-                throw new AssertionError("Illegal relative direction.");
-        }
+        return switch (this) {
+            case FRONT -> RIGHT;
+            case RIGHT -> BACK;
+            case BACK -> LEFT;
+            case LEFT -> FRONT;
+        };
     }
 
     /**

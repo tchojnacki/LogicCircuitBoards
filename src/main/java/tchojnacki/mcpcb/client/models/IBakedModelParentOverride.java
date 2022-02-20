@@ -1,15 +1,15 @@
 package tchojnacki.mcpcb.client.models;
 
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.model.BakedQuad;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.model.ItemCameraTransforms;
-import net.minecraft.client.renderer.model.ItemOverrideList;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockDisplayReader;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.data.IModelData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,25 +20,25 @@ import java.util.Random;
 
 /**
  * Helper class extended by most custom baked models.
- * By default {@link IBakedModel} requires a lot of method overriding.
+ * By default {@link BakedModel} requires a lot of method overriding.
  * All of the models contained in the mod delegate some of the rendering
  * to a base model (defined in a JSON file inside resources/assets/mcpcb/models).
- * This class overrides all methods required by {@link IBakedModel} such that
+ * This class overrides all methods required by {@link BakedModel} such that
  * they all use the base model's functionality. These methods can be overrided
  * further to provide custom behaviour.
  */
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public abstract class IBakedModelParentOverride implements IBakedModel {
+public abstract class IBakedModelParentOverride implements BakedModel {
     // Model, which methods we use
-    protected final IBakedModel baseModel;
+    protected final BakedModel baseModel;
 
     /**
      * Constructor.
      *
      * @param baseModel model that the overrides will use by default
      */
-    public IBakedModelParentOverride(IBakedModel baseModel) {
+    public IBakedModelParentOverride(BakedModel baseModel) {
         this.baseModel = baseModel;
     }
 
@@ -64,7 +64,7 @@ public abstract class IBakedModelParentOverride implements IBakedModel {
      * @param blockState block's state
      * @param side       direction of requested quads
      * @param random     randomness supplier
-     * @param data       additional data supplied by {@link #getModelData(IBlockDisplayReader, BlockPos, BlockState, IModelData)}
+     * @param data       additional data supplied by {@link #getModelData(BlockAndTintGetter, BlockPos, BlockState, IModelData)}
      * @return baked quad list for blocks
      * @throws AssertionError for items
      */
@@ -85,13 +85,13 @@ public abstract class IBakedModelParentOverride implements IBakedModel {
      */
     @NotNull
     @Override
-    public abstract IModelData getModelData(@NotNull IBlockDisplayReader world, @NotNull BlockPos blockPos, @NotNull BlockState blockState, @NotNull IModelData data);
+    public abstract IModelData getModelData(@NotNull BlockAndTintGetter world, @NotNull BlockPos blockPos, @NotNull BlockState blockState, @NotNull IModelData data);
 
     /**
      * This method is unused and replaced by Forge's alternative which supplies {@link IModelData}.
      *
      * @throws AssertionError always throws
-     * @see #getParticleTexture(IModelData)
+     * @see #getParticleIcon(IModelData)
      */
     @Override
     public final TextureAtlasSprite getParticleIcon() {
@@ -99,14 +99,12 @@ public abstract class IBakedModelParentOverride implements IBakedModel {
     }
 
     /**
-     * Forge's alternative to {@link #getParticleIcon()}.
-     *
-     * @param data additional data from {@link #getModelData(IBlockDisplayReader, BlockPos, BlockState, IModelData)}
+     * @param data additional data from {@link #getModelData(BlockAndTintGetter, BlockPos, BlockState, IModelData)}
      * @return particle texture
      */
     @Override
-    public TextureAtlasSprite getParticleTexture(@NotNull IModelData data) {
-        return baseModel.getParticleTexture(data);
+    public TextureAtlasSprite getParticleIcon(@NotNull IModelData data) {
+        return baseModel.getParticleIcon(data);
     }
 
     // All of the following methods simply use base model's implementation
@@ -132,13 +130,13 @@ public abstract class IBakedModelParentOverride implements IBakedModel {
     }
 
     @Override
-    public ItemOverrideList getOverrides() {
+    public ItemOverrides getOverrides() {
         return baseModel.getOverrides();
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public ItemCameraTransforms getTransforms() {
+    public ItemTransforms getTransforms() {
         return baseModel.getTransforms();
     }
 }

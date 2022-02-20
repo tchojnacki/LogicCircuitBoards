@@ -1,13 +1,12 @@
 package tchojnacki.mcpcb.client.models;
 
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.model.ItemOverrideList;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import tchojnacki.mcpcb.logic.TruthTable;
@@ -23,7 +22,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  */
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public class CircuitItemOverrideList extends ItemOverrideList {
+public class CircuitItemOverrideList extends ItemOverrides {
     public CircuitItemOverrideList() {
         super();
     }
@@ -39,14 +38,14 @@ public class CircuitItemOverrideList extends ItemOverrideList {
      */
     @Nullable
     @Override
-    public IBakedModel resolve(@NotNull IBakedModel baseModel, @NotNull ItemStack itemStack, @Nullable ClientWorld _world, @Nullable LivingEntity _player) {
+    public BakedModel resolve(@NotNull BakedModel baseModel, @NotNull ItemStack itemStack, @Nullable ClientLevel _world, @Nullable LivingEntity _player, int _flag) {
         // By default use an empty table (blank circuit)
         TruthTable table = TruthTable.empty();
 
         // Extract BlockEntityTag->TruthTable from item's NBT
-        CompoundNBT tag = itemStack.getTagElement("BlockEntityTag");
+        CompoundTag tag = itemStack.getTagElement("BlockEntityTag");
         if (tag != null) {
-            if (tag.contains("TruthTable", Constants.NBT.TAG_COMPOUND)) {
+            if (tag.contains("TruthTable", CompoundTag.TAG_COMPOUND)) {
                 table = TruthTable.fromNBT(tag.getCompound("TruthTable"));
             }
         }

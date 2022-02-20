@@ -1,8 +1,8 @@
 package tchojnacki.mcpcb.logic;
 
 import com.google.common.collect.ImmutableSet;
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.network.chat.TranslatableComponent;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
@@ -75,8 +75,8 @@ public class KnownTable {
         return id;
     }
 
-    public TranslationTextComponent getTranslationKey() {
-        return new TranslationTextComponent("util.mcpcb.circuit." + id);
+    public TranslatableComponent getTranslationKey() {
+        return new TranslatableComponent("util.mcpcb.circuit." + id);
     }
 
     public String getTexture() {

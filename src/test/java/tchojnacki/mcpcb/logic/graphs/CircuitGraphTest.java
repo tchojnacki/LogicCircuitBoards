@@ -1,7 +1,7 @@
 package tchojnacki.mcpcb.logic.graphs;
 
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import org.junit.jupiter.api.Test;
 import tchojnacki.mcpcb.logic.BoardSocket;
 import tchojnacki.mcpcb.logic.KnownTable;

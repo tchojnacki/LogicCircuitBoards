@@ -1,10 +1,10 @@
 package tchojnacki.mcpcb.common.groups;
 
 import com.google.common.collect.ImmutableList;
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.NonNullList;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
 import tchojnacki.mcpcb.common.block.CircuitBlock;
 import tchojnacki.mcpcb.logic.KnownTable;
 import tchojnacki.mcpcb.logic.RelDir;
@@ -21,7 +21,7 @@ import java.util.Collections;
  */
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public class CircuitGroup extends ItemGroup {
+public class CircuitGroup extends CreativeModeTab {
     public static final String ID = "mcpcb_circuit_tab";
 
     /**

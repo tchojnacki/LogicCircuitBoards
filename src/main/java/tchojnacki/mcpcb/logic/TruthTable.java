@@ -1,12 +1,11 @@
 package tchojnacki.mcpcb.logic;
 
 import com.google.common.collect.ImmutableList;
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.nbt.ByteArrayNBT;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.nbt.ByteArrayTag;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -196,18 +195,18 @@ public class TruthTable {
      * @return returns an NBT tag containing the truth table
      * @see RelDir#dirListToBytes(List)
      */
-    public CompoundNBT toNBT() {
-        CompoundNBT tag = new CompoundNBT();
+    public CompoundTag toNBT() {
+        CompoundTag tag = new CompoundTag();
 
         tag.putByteArray("Inputs", RelDir.dirListToBytes(inputs));
         tag.putByteArray("Outputs", RelDir.dirListToBytes(outputs));
 
-        ListNBT list = new ListNBT();
+        ListTag list = new ListTag();
         list.addAll(
                 mappings
                         .stream()
-                        .map(bitset -> new ByteArrayNBT(bitset.toByteArray()))
-                        .collect(Collectors.toList())
+                        .map(bitset -> new ByteArrayTag(bitset.toByteArray()))
+                        .toList()
         );
 
         tag.put("Mappings", list);
@@ -303,11 +302,11 @@ public class TruthTable {
      * @return the truth table
      * @see #toNBT()
      */
-    public static TruthTable fromNBT(CompoundNBT tag) {
+    public static TruthTable fromNBT(CompoundTag tag) {
         if (
-                !tag.contains("Inputs", Constants.NBT.TAG_BYTE_ARRAY) ||
-                        !tag.contains("Outputs", Constants.NBT.TAG_BYTE_ARRAY) ||
-                        !tag.contains("Mappings", Constants.NBT.TAG_LIST)
+                !tag.contains("Inputs", CompoundTag.TAG_BYTE_ARRAY) ||
+                        !tag.contains("Outputs", CompoundTag.TAG_BYTE_ARRAY) ||
+                        !tag.contains("Mappings", CompoundTag.TAG_LIST)
         ) {
             return TruthTable.empty();
         }
@@ -316,10 +315,10 @@ public class TruthTable {
         ArrayList<RelDir> outputs = RelDir.bytesToDirList(tag.getByteArray("Outputs"));
 
         ArrayList<BitSet> mappings = new ArrayList<>();
-        ListNBT list = tag.getList("Mappings", Constants.NBT.TAG_BYTE_ARRAY);
-        for (INBT elem : list) {
-            if (elem instanceof ByteArrayNBT) {
-                mappings.add(BitSet.valueOf(((ByteArrayNBT) elem).getAsByteArray()));
+        ListTag list = tag.getList("Mappings", CompoundTag.TAG_BYTE_ARRAY);
+        for (Tag elem : list) {
+            if (elem instanceof ByteArrayTag) {
+                mappings.add(BitSet.valueOf(((ByteArrayTag) elem).getAsByteArray()));
             } else {
                 return TruthTable.empty();
             }

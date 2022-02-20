@@ -1,6 +1,6 @@
 package tchojnacki.mcpcb;
 
-import net.minecraft.item.ItemGroup;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
@@ -20,12 +20,10 @@ import tchojnacki.mcpcb.util.Registration;
 @SuppressWarnings("unused")
 @Mod(MCPCB.MOD_ID)
 public class MCPCB {
-    // TODO: Update to 1.17
-
     public static final String MOD_ID = "mcpcb";
 
-    public static final ItemGroup MAIN_GROUP = new MainGroup();
-    public static final ItemGroup CIRCUIT_GROUP = new CircuitGroup();
+    public static final CreativeModeTab MAIN_GROUP = new MainGroup();
+    public static final CreativeModeTab CIRCUIT_GROUP = new CircuitGroup();
 
     public MCPCB() {
         Registration.register();

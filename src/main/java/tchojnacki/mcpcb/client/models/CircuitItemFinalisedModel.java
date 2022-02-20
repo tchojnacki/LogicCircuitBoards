@@ -1,16 +1,16 @@
 package tchojnacki.mcpcb.client.models;
 
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.model.BakedQuad;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.model.ItemOverrideList;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockDisplayReader;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.data.IModelData;
 import org.jetbrains.annotations.NotNull;
 import tchojnacki.mcpcb.logic.KnownTable;
@@ -24,7 +24,7 @@ import java.util.Random;
 
 /**
  * The finalised circuit item model that renders model's top face using {@link TruthTable}
- * extracted from item stack by {@link CircuitItemOverrideList#resolve(IBakedModel, ItemStack, ClientWorld, LivingEntity)}.
+ * extracted from item stack by {@link CircuitItemOverrideList#resolve(BakedModel, ItemStack, ClientLevel, LivingEntity, int)}.
  *
  * @see IBakedModelParentOverride
  * @see CircuitItemBaseModel
@@ -38,12 +38,12 @@ public class CircuitItemFinalisedModel extends IBakedModelParentOverride {
     private final String centerTextureName;
 
     /**
-     * Constructor used in {@link CircuitItemOverrideList#resolve(IBakedModel, ItemStack, ClientWorld, LivingEntity)}.
+     * Constructor used in {@link CircuitItemOverrideList#resolve(BakedModel, ItemStack, ClientLevel, LivingEntity, int)}.
      *
      * @param baseModel base model
      * @param table     truth table contained in item's NBT tag
      */
-    public CircuitItemFinalisedModel(IBakedModel baseModel, TruthTable table) {
+    public CircuitItemFinalisedModel(BakedModel baseModel, TruthTable table) {
         super(baseModel);
 
         KnownTable recognized = table.recognize();
@@ -88,7 +88,7 @@ public class CircuitItemFinalisedModel extends IBakedModelParentOverride {
      */
     @NotNull
     @Override
-    public ItemOverrideList getOverrides() {
+    public ItemOverrides getOverrides() {
         throw new UnsupportedOperationException("The finalised model does not have an override list.");
     }
 
@@ -110,7 +110,7 @@ public class CircuitItemFinalisedModel extends IBakedModelParentOverride {
      */
     @NotNull
     @Override
-    public IModelData getModelData(@NotNull IBlockDisplayReader _world, @NotNull BlockPos _blockPos, @NotNull BlockState _blockState, @NotNull IModelData _data) {
+    public IModelData getModelData(@NotNull BlockAndTintGetter _world, @NotNull BlockPos _blockPos, @NotNull BlockState _blockState, @NotNull IModelData _data) {
         throw new AssertionError("IForgeBakedModel::getModelData should never be called.");
     }
 }

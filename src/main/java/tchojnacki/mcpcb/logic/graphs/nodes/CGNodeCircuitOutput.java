@@ -1,6 +1,6 @@
 package tchojnacki.mcpcb.logic.graphs.nodes;
 
-import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import tchojnacki.mcpcb.logic.RelDir;
 
 import javax.annotation.ParametersAreNonnullByDefault;

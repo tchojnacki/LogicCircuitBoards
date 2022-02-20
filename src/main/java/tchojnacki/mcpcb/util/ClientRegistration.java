@@ -1,12 +1,11 @@
 package tchojnacki.mcpcb.util;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.client.gui.ScreenManager;
-import net.minecraft.client.renderer.BlockModelShapes;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.model.ModelResourceLocation;
-import net.minecraft.inventory.container.PlayerContainer;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.renderer.block.BlockModelShaper;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -33,8 +32,8 @@ public class ClientRegistration {
     public static void onClientSetupEvent(FMLClientSetupEvent event) {
         // Register screens for our containers
 
-        ScreenManager.register(Registration.SCREWDRIVER_CONTAINER.get(), ScrewdriverContainerScreen::new);
-        ScreenManager.register(Registration.MULTIMETER_CONTAINER.get(), MultimeterContainerScreen::new);
+        MenuScreens.register(Registration.SCREWDRIVER_CONTAINER.get(), ScrewdriverContainerScreen::new);
+        MenuScreens.register(Registration.MULTIMETER_CONTAINER.get(), MultimeterContainerScreen::new);
     }
 
     /**
@@ -50,8 +49,8 @@ public class ClientRegistration {
 
         // Replace block model
         for (BlockState blockState : Registration.CIRCUIT_BLOCK.get().getStateDefinition().getPossibleStates()) {
-            ModelResourceLocation location = BlockModelShapes.stateToModelLocation(blockState);
-            IBakedModel baseModel = event.getModelRegistry().get(location);
+            ResourceLocation location = BlockModelShaper.stateToModelLocation(blockState);
+            BakedModel baseModel = event.getModelRegistry().get(location);
 
             if (baseModel != null && !(baseModel instanceof CircuitBlockModel)) {
                 event.getModelRegistry().put(location, new CircuitBlockModel(baseModel));
@@ -59,8 +58,8 @@ public class ClientRegistration {
         }
 
         // Replace item model
-        ModelResourceLocation itemModelResourceLocation = CircuitItemBaseModel.MODEL_RESOURCE_LOCATION;
-        IBakedModel baseModel = event.getModelRegistry().get(itemModelResourceLocation);
+        ResourceLocation itemModelResourceLocation = CircuitItemBaseModel.MODEL_RESOURCE_LOCATION;
+        BakedModel baseModel = event.getModelRegistry().get(itemModelResourceLocation);
         if (baseModel != null && !(baseModel instanceof CircuitItemBaseModel)) {
             event.getModelRegistry().put(itemModelResourceLocation, new CircuitItemBaseModel(baseModel));
         }
@@ -73,7 +72,7 @@ public class ClientRegistration {
      */
     @SubscribeEvent
     public static void onTextureStitchEvent(TextureStitchEvent.Pre event) {
-        if (event.getMap().location() == PlayerContainer.BLOCK_ATLAS) {
+        if (event.getAtlas().location() == InventoryMenu.BLOCK_ATLAS) {
             event.addSprite(CircuitTopFaceBakery.CORNER_TEXTURE);
             event.addSprite(CircuitTopFaceBakery.SOCKET_TEXTURE);
 

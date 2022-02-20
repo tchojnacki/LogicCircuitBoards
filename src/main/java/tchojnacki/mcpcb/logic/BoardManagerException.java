@@ -1,7 +1,7 @@
 package tchojnacki.mcpcb.logic;
 
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.network.chat.TranslatableComponent;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -11,13 +11,13 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 public class BoardManagerException extends RuntimeException {
-    private final TranslationTextComponent translationTextComponent;
+    private final TranslatableComponent translationTextComponent;
 
     public BoardManagerException(String translationString) {
-        translationTextComponent = new TranslationTextComponent("util.mcpcb.board_manager.error." + translationString);
+        translationTextComponent = new TranslatableComponent("util.mcpcb.board_manager.error." + translationString);
     }
 
-    public TranslationTextComponent getTranslationTextComponent() {
+    public TranslatableComponent getTranslationTextComponent() {
         return translationTextComponent;
     }
 }

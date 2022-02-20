@@ -1,22 +1,21 @@
 package tchojnacki.mcpcb.common.item;
 
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.container.IContainerProvider;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.inventory.container.SimpleNamedContainerProvider;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.IWorldPosCallable;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.ChatType;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.network.NetworkHooks;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.Util;
+import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuConstructor;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.network.NetworkHooks;
 import tchojnacki.mcpcb.MCPCB;
 import tchojnacki.mcpcb.common.block.CircuitBlock;
 import tchojnacki.mcpcb.common.container.MultimeterContainer;
@@ -51,18 +50,16 @@ public class MultimeterItem extends Item {
      * @see MultimeterContainer
      */
     @Override
-    public ActionResultType useOn(ItemUseContext context) {
-        World world = context.getLevel();
-        PlayerEntity player = context.getPlayer();
+    public InteractionResult useOn(UseOnContext context) {
+        Level world = context.getLevel();
+        Player player = context.getPlayer();
 
         final TruthTable truthTable;
 
         // Extract the table from the breadboard or show an error
         if (world.getBlockState(context.getClickedPos()).getBlock() instanceof CircuitBlock) {
-            TileEntity tileEntity = world.getBlockEntity(context.getClickedPos());
-            if (tileEntity instanceof CircuitBlockTileEntity) {
-                CircuitBlockTileEntity circuitEntity = (CircuitBlockTileEntity) tileEntity;
-
+            BlockEntity tileEntity = world.getBlockEntity(context.getClickedPos());
+            if (tileEntity instanceof CircuitBlockTileEntity circuitEntity) {
                 truthTable = circuitEntity.getTruthTable();
             } else {
                 truthTable = null;
@@ -78,37 +75,37 @@ public class MultimeterItem extends Item {
 
                 truthTable = boardTable;
             } catch (BoardManagerException error) {
-                TranslationTextComponent msg = error
+                TranslatableComponent msg = error
                         .getTranslationTextComponent()
                         .getKey()
                         .equals("util.mcpcb.board_manager.error.target_isnt_breadboard")
-                        ? new TranslationTextComponent("util.mcpcb.multimeter.target")
+                        ? new TranslatableComponent("util.mcpcb.multimeter.target")
                         : error.getTranslationTextComponent();
 
                 if (player != null && !world.isClientSide()) {
-                    ((ServerPlayerEntity) player).sendMessage(
+                    ((ServerPlayer) player).sendMessage(
                             msg,
                             ChatType.GAME_INFO, Util.NIL_UUID
                     );
                 }
 
-                return ActionResultType.FAIL;
+                return InteractionResult.FAIL;
             }
         }
 
         if (truthTable == null) {
-            return ActionResultType.FAIL;
+            return InteractionResult.FAIL;
         }
 
         // Create the container
         if (player != null && !world.isClientSide()) {
-            IContainerProvider provider = (int winId, PlayerInventory playerInv, PlayerEntity _playerEnt) -> MultimeterContainer.createContainerServerSide(
-                    winId, playerInv, IWorldPosCallable.create(world, context.getClickedPos()), truthTable
+            MenuConstructor provider = (int winId, Inventory playerInv, Player _playerEnt) -> MultimeterContainer.createContainerServerSide(
+                    winId, playerInv, truthTable
             );
-            INamedContainerProvider namedProvider = new SimpleNamedContainerProvider(provider, MultimeterContainer.TITLE);
-            NetworkHooks.openGui((ServerPlayerEntity) player, namedProvider, (packetBuffer) -> packetBuffer.writeNbt(truthTable.toNBT()));
+            MenuProvider namedProvider = new SimpleMenuProvider(provider, MultimeterContainer.TITLE);
+            NetworkHooks.openGui((ServerPlayer) player, namedProvider, (packetBuffer) -> packetBuffer.writeNbt(truthTable.toNBT()));
         }
 
-        return ActionResultType.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 }

@@ -2,29 +2,25 @@ package tchojnacki.mcpcb.common.container;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import mcp.MethodsReturnNonnullByDefault;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.CraftResultInventory;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.IWorldPosCallable;
-import net.minecraft.util.IntReferenceHolder;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.*;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import tchojnacki.mcpcb.MCPCB;
 import tchojnacki.mcpcb.common.block.CircuitBlock;
+import tchojnacki.mcpcb.common.item.MultimeterItem;
 import tchojnacki.mcpcb.logic.TruthTable;
 import tchojnacki.mcpcb.util.Registration;
 
@@ -35,14 +31,14 @@ import java.util.stream.IntStream;
 /**
  * Container used for circuit creation, opened by multimeter.
  *
- * @see tchojnacki.mcpcb.common.item.MultimeterItem
+ * @see MultimeterItem
  * @see tchojnacki.mcpcb.client.screen.MultimeterContainerScreen
  */
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public class MultimeterContainer extends Container {
+public class MultimeterContainer extends AbstractContainerMenu {
     public final static String ID = "multimeter_container";
-    public final static ITextComponent TITLE = new TranslationTextComponent(String.format("container.%s.%s.title", MCPCB.MOD_ID, MultimeterContainer.ID));
+    public final static Component TITLE = new TranslatableComponent(String.format("container.%s.%s.title", MCPCB.MOD_ID, MultimeterContainer.ID));
 
     public final static int MAX_NAME_CHARS = 15;
 
@@ -87,13 +83,12 @@ public class MultimeterContainer extends Container {
      *
      * @param windowId  window's id passed to superclass
      * @param playerInv player's inventory
-     * @param access    world access
      * @param table     truth table for the circuit
      * @return server side container
-     * @see tchojnacki.mcpcb.common.item.MultimeterItem#useOn(ItemUseContext)
+     * @see MultimeterItem#useOn(UseOnContext)
      */
-    public static MultimeterContainer createContainerServerSide(int windowId, PlayerInventory playerInv, IWorldPosCallable access, TruthTable table) {
-        return new MultimeterContainer(windowId, playerInv, access, table);
+    public static MultimeterContainer createContainerServerSide(int windowId, Inventory playerInv, TruthTable table) {
+        return new MultimeterContainer(windowId, playerInv, table);
     }
 
     /**
@@ -103,43 +98,41 @@ public class MultimeterContainer extends Container {
      * @param playerInv player's inventory
      * @param extraData extra data - in this case containing the truth table
      * @return client side container
-     * @see tchojnacki.mcpcb.common.item.MultimeterItem#useOn(ItemUseContext)
+     * @see MultimeterItem#useOn(UseOnContext)
      */
-    public static MultimeterContainer createContainerClientSide(int windowId, PlayerInventory playerInv, PacketBuffer extraData) {
+    public static MultimeterContainer createContainerClientSide(int windowId, Inventory playerInv, FriendlyByteBuf extraData) {
         // Read truth table data from the packet
-        CompoundNBT tableTag = extraData.readNbt();
+        CompoundTag tableTag = extraData.readNbt();
         TruthTable truthTable = tableTag != null ? TruthTable.fromNBT(tableTag) : TruthTable.empty();
 
-        return new MultimeterContainer(windowId, playerInv, IWorldPosCallable.NULL, truthTable);
+        return new MultimeterContainer(windowId, playerInv, truthTable);
     }
 
-    private final IWorldPosCallable access;
     private final TruthTable truthTable;
     private final CircuitBlock circuitBlock;
-
-    private final CraftResultInventory resultInventory = new CraftResultInventory();
-    private final IInventory inputInventory = new Inventory(3) {
+    private final ResultContainer resultInventory = new ResultContainer();
+    private final SimpleContainer inputInventory = new SimpleContainer((int) inputRange().count()) {
+        @Override
         public void setChanged() {
             super.setChanged();
-            slotsChanged(this);
+            createResult();
         }
     };
 
     private final ImmutableList<Slot> inputSlotList;
-    private final ImmutableList<IntReferenceHolder> costList;
+    private final ImmutableList<DataSlot> costList;
 
     private String name = "";
 
     /**
      * Container's constructor, use appropriate static factory method instead.
      *
-     * @see #createContainerServerSide(int, PlayerInventory, IWorldPosCallable, TruthTable)
-     * @see #createContainerClientSide(int, PlayerInventory, PacketBuffer)
+     * @see #createContainerServerSide(int, Inventory, TruthTable)
+     * @see #createContainerClientSide(int, Inventory, FriendlyByteBuf)
      */
-    private MultimeterContainer(int id, PlayerInventory playerInv, IWorldPosCallable access, TruthTable table) {
+    private MultimeterContainer(int id, Inventory playerInv, TruthTable table) {
         super(Registration.MULTIMETER_CONTAINER.get(), id);
 
-        this.access = access;
         this.truthTable = table;
         this.circuitBlock = (CircuitBlock) Registration.CIRCUIT_BLOCK.get();
 
@@ -159,48 +152,50 @@ public class MultimeterContainer extends Container {
         ImmutableList.Builder<Slot> builder = new ImmutableList.Builder<>();
 
         // Input slots
-        inputRange().forEach(i -> builder.add(this.addSlot(new Slot(this.inputInventory, i, 68 + 20 * i, 58) {
-            @Override
-            public boolean mayPlace(ItemStack itemStack) {
-                return SLOT_ALLOWED_ITEMS.get(i).contains(itemStack.getItem());
-            }
-        })));
+        inputRange().forEach(i -> builder.add(
+                addSlot(new Slot(this.inputInventory, i, 68 + 20 * i, 58) {
+                    @Override
+                    public boolean mayPlace(ItemStack itemStack) {
+                        return SLOT_ALLOWED_ITEMS.get(i).contains(itemStack.getItem());
+                    }
+                })
+        ));
 
         inputSlotList = builder.build();
 
         // Output slot
-        this.addSlot(new Slot(this.resultInventory, 3, 152, 58) {
+        this.addSlot(new Slot(this.resultInventory, 4, 152, 58) {
             @Override
             public boolean mayPlace(ItemStack _itemStack) {
                 return false;
             }
 
             @Override
-            public boolean mayPickup(PlayerEntity playerEntity) {
+            public boolean mayPickup(Player playerEntity) {
                 return canCraft();
             }
 
             @Override
-            public ItemStack onTake(PlayerEntity playerEntity, ItemStack itemStack) {
+            public void onTake(Player playerEntity, ItemStack itemStack) {
                 itemStack.onCraftedBy(playerEntity.level, playerEntity, itemStack.getCount());
 
                 inputRange().forEach(i -> inputSlotList.get(i).remove(costList.get(i).get()));
                 createResult();
 
-                return super.onTake(playerEntity, itemStack);
+                super.onTake(playerEntity, itemStack);
             }
         });
 
         // Cost list synchronizing them between server and client side
-        costList = new ImmutableList.Builder<IntReferenceHolder>()
-                .add(IntReferenceHolder.standalone()) // terracotta
-                .add(IntReferenceHolder.standalone()) // dust
-                .add(IntReferenceHolder.standalone()) // torch
+        costList = new ImmutableList.Builder<DataSlot>()
+                .add(DataSlot.standalone()) // terracotta
+                .add(DataSlot.standalone()) // dust
+                .add(DataSlot.standalone()) // torch
                 .build();
 
         TruthTable.CircuitCosts circuitCosts = table.calculateCost();
 
-        if (playerInv.player.abilities.instabuild) {
+        if (playerInv.player.getAbilities().instabuild) {
             inputRange().forEach(i -> costList.get(i).set(0));
         } else {
             costList.get(0).set(circuitCosts.terracotta);
@@ -208,7 +203,7 @@ public class MultimeterContainer extends Container {
             costList.get(2).set(circuitCosts.torches);
         }
 
-        for (IntReferenceHolder holder : costList) {
+        for (DataSlot holder : costList) {
             this.addDataSlot(holder);
         }
 
@@ -247,7 +242,7 @@ public class MultimeterContainer extends Container {
 
             // Empty string is used to mark default name
             if (!name.isEmpty()) {
-                result.setHoverName(new StringTextComponent(name));
+                result.setHoverName(new TextComponent(name));
             }
 
             this.resultInventory.setItem(0, result);
@@ -268,7 +263,7 @@ public class MultimeterContainer extends Container {
      * @return always true
      */
     @Override
-    public boolean stillValid(PlayerEntity _player) {
+    public boolean stillValid(Player _player) {
         // TODO: Possibly check distance from container and others like in vanilla's containers
         return true;
     }
@@ -279,19 +274,9 @@ public class MultimeterContainer extends Container {
      * @param player player using the container
      */
     @Override
-    public void removed(PlayerEntity player) {
+    public void removed(Player player) {
         super.removed(player);
-        this.access.execute((world, blockPos) -> this.clearContainer(player, world, this.inputInventory));
-    }
-
-    @Override
-    public void slotsChanged(IInventory inventory) {
-        super.slotsChanged(inventory);
-
-        // Refresh output on input change
-        if (inventory == this.inputInventory) {
-            this.createResult();
-        }
+        this.clearContainer(player, this.inputInventory);
     }
 
     /**
@@ -305,12 +290,12 @@ public class MultimeterContainer extends Container {
      * @return {@link ItemStack#EMPTY} on failure or copy of original stack on success
      */
     @Override
-    public ItemStack quickMoveStack(PlayerEntity playerEntity, int sourceSlotIdx) {
+    public ItemStack quickMoveStack(Player playerEntity, int sourceSlotIdx) {
         // Based on: https://github.com/TheGreyGhost/MinecraftByExample/blob/e9862e606f6306463fccde5e3ebe576ea88f0745/src/main/java/minecraftbyexample/mbe30_inventory_basic/ContainerBasic.java#L139
 
         Slot sourceSlot = slots.get(sourceSlotIdx);
 
-        if (sourceSlot == null || !sourceSlot.hasItem()) {
+        if (!sourceSlot.hasItem()) {
             return ItemStack.EMPTY;
         }
 
@@ -369,7 +354,7 @@ public class MultimeterContainer extends Container {
      */
     @OnlyIn(Dist.CLIENT)
     public ImmutableList<Integer> getCostArray() {
-        return ImmutableList.copyOf(costList.stream().map(IntReferenceHolder::get).collect(Collectors.toList()));
+        return ImmutableList.copyOf(costList.stream().map(DataSlot::get).collect(Collectors.toList()));
     }
 
     /**

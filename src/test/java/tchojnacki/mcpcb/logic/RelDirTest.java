@@ -1,6 +1,6 @@
 package tchojnacki.mcpcb.logic;
 
-import net.minecraft.util.Direction;
+import net.minecraft.core.Direction;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;

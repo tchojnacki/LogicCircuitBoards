@@ -18,6 +18,7 @@ breadboard blocks to build a flat square with a side length of 8. The created ar
 which you can build a logic gate using redstone, redstone torches, and other circuits.
 
 ![](./docs/images/craft-breadboard.png)
+
 ![](./docs/images/breadboard.png)
 
 ### Screwdriver and breadboard configuration
@@ -26,7 +27,9 @@ an input or output. Changing the side type turns 6 of the breadboard blocks into
 wires placed directly above those blocks connect with them and can receive power from those blocks.
 
 ![](./docs/images/craft-screwdriver.png)
+
 ![](./docs/images/configuration.png)
+
 ![](./docs/images/configured.png)
 
 ### Multimeter and circuit creation
@@ -36,7 +39,9 @@ color), redstone dust, and redstone torches in survival. You can give a custom n
 outputs will be oriented such that the circuit's front corresponds with the north side of the breadboard.
 
 ![](./docs/images/craft-multimeter.png)
+
 ![](./docs/images/creation-creative.png)
+
 ![](./docs/images/creation-survival.png)
 
 The circuits are classified only according to the boolean function they represent, which means that for instance the
@@ -63,6 +68,7 @@ The mod defines numerous advancements that act as a lightweight tutorial. The ad
 you always have recipes required to unlock the next advancement in a tree.
 
 ![](./docs/images/advancements-partial.png)
+
 ![](./docs/images/advancements-full.png)
 
 One of the advancements requires you to discover all of the built-in recognized circuit types:

@@ -11,11 +11,10 @@ import tchojnacki.mcpcb.util.Registration;
 
 /**
  * Entry point of the mod.
- *
  * MCPCB is a shortcut of mod's initial name - MineCraft Printed Circuit Boards.
  *
  * @author tchojnacki
- * @version 1.0.1
+ * @version 1.0.3
  */
 @SuppressWarnings("unused")
 @Mod(MCPCB.MOD_ID)

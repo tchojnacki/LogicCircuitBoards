@@ -13,7 +13,7 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-version = '1.0.2'
+version = '1.0.3'
 group = 'tchojnacki.mcpcb' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'mcpcb'
 
@@ -127,12 +127,12 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+    implementation 'org.junit.jupiter:junit-jupiter:5.9.0'
 
     // Specify the version of Minecraft to use. If this is any group other than 'net.minecraft', it is assumed
     // that the dep is a ForgeGradle 'patcher' dependency, and its patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-    minecraft 'net.minecraftforge:forge:1.18.1-39.0.79'
+    minecraft 'net.minecraftforge:forge:1.18.2-40.1.73'
 
     // Real mod deobf dependency examples - these get remapped to your current mappings
     // compileOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}:api") // Adds JEI API as a compile dependency
@@ -183,4 +183,5 @@ publishing {
 
 tasks.withType(JavaCompile).each {
     it.options.compilerArgs.add('--enable-preview')
+    it.options.encoding = 'UTF-8'
 }
